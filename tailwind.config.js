@@ -2,7 +2,15 @@
 module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        avenir: ["Avenir", "sans-serif"],
+      },
+
+      colors: {
+        "custom-red": "#AD3232", // Contoh hex code untuk warna merah
+      },
+    },
   },
   plugins: [],
 };
