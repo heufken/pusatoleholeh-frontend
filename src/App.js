@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import LandingPage from './pages/landing'; // This is the homepage
 import LoginPage from './pages/auth'; // Import halaman login (auth.js)
+import RegisterPage from './pages/register'; // Import halaman register yang baru
 
 function App() {
   return (
@@ -13,6 +14,9 @@ function App() {
 
           {/* Login Route */}
           <Route path="/login" element={<LoginPage />} />
+
+          {/* Register Route */}
+          <Route path="/register" element={<RegisterPage />} />
         </Routes>
       </div>
     </Router>
