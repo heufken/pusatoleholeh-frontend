@@ -63,6 +63,12 @@ function RegisterPage() {
                 </button>
               </div>
             </form>
+            <button
+              type="submit"
+              className="w-full bg-red-600 text-white rounded-md py-2 px-4 text-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 mt-4"
+            >
+              Buat Akun
+            </button>
             <div className="mt-4 relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300"></div>
@@ -80,12 +86,6 @@ function RegisterPage() {
                 Login dengan Google
               </button>
             </div>
-            <button
-              type="submit"
-              className="w-full bg-red-600 text-white rounded-md py-2 px-4 text-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 mt-4"
-            >
-              Buat Akun
-            </button>
             <footer className="mt-4 text-center text-xs text-gray-500">
               <p>© 2024 PusatOlehOleh. All Rights Reserved</p>
             </footer>
