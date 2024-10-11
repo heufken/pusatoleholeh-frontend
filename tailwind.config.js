@@ -8,7 +8,7 @@ module.exports = {
       },
 
       colors: {
-        "custom-red": "#AD3232", // Contoh hex code untuk warna merah
+        "custom-red": "#AD3232",
       },
     },
   },
