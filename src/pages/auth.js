@@ -1,8 +1,29 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Modal from "react-modal";
+
+// Atur root element untuk modal
+Modal.setAppElement("#root");
 
 function AuthPage() {
   const navigate = useNavigate();
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(null); // State untuk menyimpan pilihan
+
+  const openModal = () => setModalIsOpen(true);
+  const closeModal = () => {
+    setModalIsOpen(false);
+    setSelectedRole(null); // Reset pilihan ketika modal ditutup
+  };
+
+  const handleSubmit = () => {
+    if (selectedRole === "user") {
+      navigate("/register");
+    } else if (selectedRole === "seller") {
+      navigate("/register-seller");
+    }
+    closeModal();
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -19,12 +40,12 @@ function AuthPage() {
               <h1 className="text-lg font-bold">PusatOlehOleh</h1>
             </div>
             <h2 className="text-xl font-bold mb-2 pt-3">
-              Masuk Terlebih Dahulu
+              Masuk untuk eksplor oleh-oleh pilihan Nusantara!
             </h2>
             <p className="text-sm text-gray-600 mb-4">
               Belum punya akun?{" "}
               <button
-                onClick={() => navigate("/register")}
+                onClick={openModal}
                 className="text-red-500 font-semibold"
               >
                 Daftar sekarang!
@@ -62,14 +83,13 @@ function AuthPage() {
                   Lupa password?
                 </button>
               </div>
-            
-            <button
-              type="submit"
-              className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-custom-red transition duration-300 font-avenir font-medium"
-            >
-              Masuk
-            </button>
 
+              <button
+                type="submit"
+                className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-custom-red transition duration-300 font-avenir font-medium"
+              >
+                Masuk
+              </button>
             </form>
 
             <div className="mt-4 relative">
@@ -108,6 +128,53 @@ function AuthPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal untuk pertanyaan "Mau daftar sebagai apa?" */}
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeModal}
+        contentLabel="Pilih Tipe Akun"
+        className="modal bg-white p-8 rounded-lg shadow-lg max-w-md mx-auto mt-20 flex flex-col items-center justify-center"
+        overlayClassName="overlay bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center"
+      >
+        <h2 className="text-lg font-bold mb-4 text-center">
+          Mau daftar sebagai apa?
+        </h2>
+        <h3 className="text-sm font-normal mb-4 text-center">
+          Pilih tipe akunmu, yuk!
+        </h3>
+
+        <div className="flex space-x-4 mb-6">
+          <button
+            onClick={() => setSelectedRole("user")}
+            className={`px-4 py-2 rounded-md transition ${
+              selectedRole === "user"
+                ? "bg-red-600 text-white"
+                : "bg-gray-200 text-gray-700"
+            }`}
+          >
+            User
+          </button>
+          <button
+            onClick={() => setSelectedRole("seller")}
+            className={`px-4 py-2 rounded-md transition ${
+              selectedRole === "seller"
+                ? "bg-red-600 text-white"
+                : "bg-gray-200 text-gray-700"
+            }`}
+          >
+            Seller
+          </button>
+        </div>
+
+        <button
+          onClick={handleSubmit}
+          className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-custom-red transition"
+          disabled={!selectedRole} // Disable tombol jika belum ada pilihan
+        >
+          Submit
+        </button>
+      </Modal>
     </div>
   );
 }
