@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkmode: 'media',
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
@@ -8,7 +9,7 @@ module.exports = {
       },
 
       colors: {
-        "custom-red": "#AD3232", // Contoh hex code untuk warna merah
+        "custom-red": "#AD3232",
       },
     },
   },
