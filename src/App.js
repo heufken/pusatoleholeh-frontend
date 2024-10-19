@@ -4,6 +4,7 @@ import LandingPage from './pages/landing';
 import LoginPage from './pages/auth'; 
 import RegisterPage from './pages/register'; 
 import RegisterSellerPage from './pages/registerseller'; 
+import DashboardSeller from './pages/dashboardseller'; 
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/register-seller" element={<RegisterSellerPage />} />
+          <Route path="/dashboard-seller" element={<DashboardSeller />} />
         </Routes>
       </div>
     </Router>
