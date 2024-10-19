@@ -8,12 +8,12 @@ Modal.setAppElement("#root");
 function AuthPage() {
   const navigate = useNavigate();
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState(null); // State untuk menyimpan pilihan
+  const [selectedRole, setSelectedRole] = useState(null); 
 
   const openModal = () => setModalIsOpen(true);
   const closeModal = () => {
     setModalIsOpen(false);
-    setSelectedRole(null); // Reset pilihan ketika modal ditutup
+    setSelectedRole(null); 
   };
 
   const handleSubmit = () => {
@@ -128,52 +128,62 @@ function AuthPage() {
     </div>
   </div>
 
-  {/* Modal untuk pertanyaan "Mau daftar sebagai apa?" */}
   <Modal
-    isOpen={modalIsOpen}
-    onRequestClose={closeModal}
-    contentLabel="Pilih Tipe Akun"
-    className="modal bg-white p-8 rounded-lg shadow-lg max-w-md mx-auto mt-20 flex flex-col items-center justify-center"
-    overlayClassName="overlay bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center"
-  >
-    <h2 className="text-lg font-bold mb-4 text-center">
-      Mau daftar sebagai apa?
-    </h2>
-    <h3 className="text-sm font-normal mb-4 text-center">
-      Pilih tipe akunmu, yuk!
-    </h3>
+  isOpen={modalIsOpen}
+  onRequestClose={closeModal}
+  contentLabel="Pilih Tipe Akun"
+  className="modal bg-white p-8 rounded-lg shadow-lg max-w-md mx-auto mt-20 flex flex-col items-center justify-center"
+  overlayClassName="overlay bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center"
+>
+  <h2 className="text-lg font-bold mb-4 text-center">
+    Mau daftar sebagai apa?
+  </h2>
+  <h3 className="text-sm font-normal mb-4 text-center">
+    Pilih tipe akunmu, yuk!
+  </h3>
 
-    <div className="flex space-x-4 mb-6">
-      <button
-        onClick={() => setSelectedRole("user")}
-        className={`px-4 py-2 rounded-md transition ${
-          selectedRole === "user"
-            ? "bg-red-600 text-white"
-            : "bg-gray-200 text-gray-700"
-        }`}
-      >
-        User
-      </button>
-      <button
-        onClick={() => setSelectedRole("seller")}
-        className={`px-4 py-2 rounded-md transition ${
-          selectedRole === "seller"
-            ? "bg-red-600 text-white"
-            : "bg-gray-200 text-gray-700"
-        }`}
-      >
-        Seller
-      </button>
-    </div>
+  <div className="flex flex-col space-y-4 mb-6 w-full">
+    <button
+      onClick={() => setSelectedRole("user")}
+      className={`px-4 py-2 rounded-md transition w-full ${
+        selectedRole === "user"
+          ? "bg-red-600 text-white"
+          : "bg-gray-200 text-gray-700"
+      }`}
+    >
+      User
+    </button>
+
+    <div className="mt-4 mb-4 relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-300"></div>
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-2 bg-white text-gray-500">atau</span>
+        </div>
+      </div>
 
     <button
-      onClick={handleSubmit}
-      className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
-      disabled={!selectedRole}
+      onClick={() => setSelectedRole("seller")}
+      className={`px-4 py-2 rounded-md transition w-full ${
+        selectedRole === "seller"
+          ? "bg-red-600 text-white"
+          : "bg-gray-200 text-gray-700"
+      }`}
     >
-      Submit
+      Seller
     </button>
-  </Modal>
+  </div>
+
+  <button
+    onClick={handleSubmit}
+    className="bg-emerald-600 text-white mt-5 px-4 py-2 rounded-md w-full hover:bg-green-600 transition"
+    disabled={!selectedRole}
+  >
+    Submit
+  </button>
+</Modal>
+
 </div>
 
   );
