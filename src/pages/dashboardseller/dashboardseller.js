@@ -23,14 +23,12 @@ const DashboardSeller = () => {
         <Header toggleSidebar={toggleSidebar} />
         <div className="p-6">
           <Routes>
-        
             <Route path="home" element={<Home />} />
             <Route path="produk" element={<Produk />} />
             <Route path="datatoko" element={<DataToko />} />
             <Route path="pesanan" element={<Pesanan />} />
             <Route path="keuangan" element={<Keuangan />} />
             
-          
             <Route path="/" element={<Navigate to="home" />} />
           </Routes>
         </div>

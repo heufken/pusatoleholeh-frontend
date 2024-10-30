@@ -44,7 +44,7 @@ function AuthPage() {
       </h2>
       <p className="text-sm text-gray-600 mb-6">
         Belum punya akun?{" "}
-        <button onClick={openModal} className="text-red-500 font-semibold">
+        <button onClick={openModal} className="text-red-500 font-bold">
           Daftar sekarang!
         </button>
       </p>
@@ -132,9 +132,11 @@ function AuthPage() {
   isOpen={modalIsOpen}
   onRequestClose={closeModal}
   contentLabel="Pilih Tipe Akun"
-  className="modal bg-white p-8 rounded-lg shadow-lg max-w-md mx-auto mt-20 flex flex-col items-center justify-center"
-  overlayClassName="overlay bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center"
+  className="modal bg-white p-8 rounded-lg shadow-lg max-w-md w-80 mx-auto flex flex-col items-center justify-center"
+  overlayClassName="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
 >
+
+
   <h2 className="text-lg font-bold mb-4 text-center">
     Mau daftar sebagai apa?
   </h2>

@@ -8,12 +8,12 @@ const DataToko = () => {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <h2 className="text-lg font-semibold mb-2">Nama Toko:</h2>
-          <p>Dummy</p>
+          <p>0123456789 -=+-</p>
         </div>
 
         <div>
           <h2 className="text-lg font-semibold mb-2">Pemilik:</h2>
-          <p>Dummy</p>
+          <p>Dummy asdfghjkl ASDFGHJKL</p>
         </div>
 
         <div>
@@ -35,7 +35,7 @@ const DataToko = () => {
       </div>
 
       <div className="mt-6">
-        <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+        <button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
           Edit Data Toko
         </button>
       </div>
