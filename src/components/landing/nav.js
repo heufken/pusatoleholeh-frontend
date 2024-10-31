@@ -17,17 +17,18 @@ function Nav() {
         </div>
 
         {/* Teks Pusat Oleh-Oleh di Tengah */}
-        <h1 className="absolute left-1/2 transform -translate-x-1/2 text-2xl font-bold text-gray-800">
+        <h1 className="absolute left-1/2 transform -translate-x-1/2 text-3xl font-bold text-gray-800">
           Pusat Oleh-Oleh
         </h1>
 
         {/* Tombol Masuk */}
         <button
           onClick={handleLoginRedirect}
-          className="border border-gray-800 text-gray-800 font-semibold py-1 px-4 rounded hover:bg-gray-200 transition-colors duration-300"
+          className="border border-gray-800 text-gray-800 font-semibold py-1 px-4 rounded hover:bg-lavenderwhip transition-colors duration-300"
         >
           Masuk
         </button>
+        
       </div>
 
       {/* Kategori Menu */}
