@@ -5,7 +5,7 @@ const Footer = () => {
     <footer className="bg-white py-8 border-t">
       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         <div>
-          <img src="/logo.png" alt="Logo" className="w-13 h-13" />
+          <img src="/logo.png" alt="Logo" className="w-28 h-28" />
         </div>
         <div>
           <h3 className="font-semibold text-lg">Quick Links</h3>
