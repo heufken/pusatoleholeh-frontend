@@ -6,6 +6,9 @@ import RegisterPage from './pages/register';
 import RegisterSellerPage from './pages/registerseller';
 import DashboardSeller from './pages/dashboardseller/dashboardseller';
 import AddProduct from './pages/dashboardseller/addproduct';
+import Search from './pages/search'
+import ProductDetail from './pages/productdetail';
+import Shop from './pages/shop';
 
 function App() {
   return (
@@ -16,9 +19,13 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/register-seller" element={<RegisterSellerPage />} />
-          <Route path="/add-product" element={<AddProduct />} />
+          <Route path="/search" element={<Search />} />
      
           <Route path="/dashboard-seller/*" element={<DashboardSeller />} />
+          <Route path="/add-product" element={<AddProduct />} />
+
+          <Route path="/shop/:shopName" element={<Shop />} />
+          <Route path="/product/:productId" element={<ProductDetail />} />
         </Routes>
       </div>
     </Router>

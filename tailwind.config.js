@@ -5,11 +5,12 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        avenir: ["Avenir", "sans-serif"],
+        sans: ["'Proxima Nova'", "system-ui", "sans-serif"],
       },
 
       colors: {
         "custom-red": "#AD3232",
+        "lavenderwhip": "#FAF5FF",
       },
     },
   },
