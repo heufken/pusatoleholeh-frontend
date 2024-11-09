@@ -24,10 +24,12 @@ const LandingPage = () => {
     <>
       <div className={isPopupOpen ? 'filter blur-sm' : ''}>
         <Nav />
-        <Hero />
-        <Products />
-        <Blog />
-        <Footer />
+        <div className="pt-20">
+          <Hero />
+          <Products />
+          <Blog />
+          <Footer />
+        </div>
         {/* Tombol dummy untuk uji coba, bisa dihapus atau dikomentari */}
         {/* <button
           onClick={() => setIsPopupOpen(true)}
