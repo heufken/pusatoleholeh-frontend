@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect } from 'react';
+// import axios from 'axios';
 
 function RelatedProduct() {
-  const [relatedProducts, setRelatedProducts] = useState([]);
+  // const [relatedProducts, setRelatedProducts] = useState([]);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
   useEffect(() => {

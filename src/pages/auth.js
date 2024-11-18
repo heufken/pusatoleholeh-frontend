@@ -1,14 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import Cookies from "js-cookie";
 import Modal from "react-modal";
-import { jwtDecode } from "jwt-decode";
+import { AuthContext } from "../components/context/AuthContext";
 
 Modal.setAppElement("#root");
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext); // Ambil fungsi login dari AuthContext
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState(null);
   const [email, setEmail] = useState("");
@@ -16,68 +16,45 @@ function AuthPage() {
   const [error, setError] = useState("");
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
-  console.log("Rendering AuthPage component");
-  console.log("API URL:", apiUrl);
-
-  const openModal = () => {
-    console.log("Opening modal");
-    setModalIsOpen(true);
-  };
-
+  const openModal = () => setModalIsOpen(true);
   const closeModal = () => {
-    console.log("Closing modal");
     setModalIsOpen(false);
     setSelectedRole(null);
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Attempting to log in with email:", email);
 
     try {
       const response = await axios.post(`${apiUrl}/auth/login`, {
         email,
         password,
       });
-      console.log("Login response:", response);
 
       const { token } = response.data;
-      console.log("Received token:", token);
 
-      // Simpan token dalam cookie
-      Cookies.set("authToken", token, { expires: 1 });
-      console.log("Token stored in cookies");
+      // Gunakan fungsi login dari AuthContext untuk menyimpan token dan memperbarui state global
+      login(token);
 
-      // Mendekode token JWT untuk mendapatkan data dari payload
-      const decoded = jwtDecode(token);
-      console.log("Decoded token:", decoded);
+      // Redirect berdasarkan role pengguna
+      const decodedToken = JSON.parse(atob(token.split(".")[1]));
+      const role = decodedToken.role;
 
-      // Ambil role dari token yang telah didekode
-      const role = decoded.role;  // Sesuaikan dengan struktur token Anda
-      console.log("User role:", role);
-
-      // Redirect berdasarkan role
       if (role === "buyer") {
-        console.log("Navigating to home page");
-        navigate("/");  // Arahkan ke halaman beranda untuk pembeli
+        navigate("/"); // Redirect ke halaman pembeli
       } else if (role === "seller") {
-        console.log("Navigating to seller dashboard");
-        navigate("/dashboard-seller");  // Arahkan ke halaman dashboard penjual
+        navigate("/dashboard-seller"); // Redirect ke halaman penjual
       }
     } catch (error) {
       console.error("Login error:", error);
-      setError("Login gagal. Silakan cek kembali nama dan password Anda.");
+      setError("Login gagal. Silakan cek kembali email dan password Anda.");
     }
   };
 
   const handleSubmit = () => {
-    console.log("Selected role:", selectedRole);
-
     if (selectedRole === "user") {
-      console.log("Navigating to register page");
       navigate("/register");
     } else if (selectedRole === "seller") {
-      console.log("Navigating to register seller page");
       navigate("/register-seller");
     }
     closeModal();
@@ -149,23 +126,6 @@ function AuthPage() {
             </button>
           </form>
 
-          <div className="mt-4 mb-4 relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">atau</span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-          >
-            <img src="/google.svg" alt="Google" className="h-5 w-5 mr-2" />
-            Masuk dengan Google
-          </button>
-
           <footer className="mt-8 text-center text-xs text-gray-500">
             <p>© 2024 PusatOlehOleh. All Rights Reserved</p>
           </footer>
@@ -184,8 +144,6 @@ function AuthPage() {
         overlayClassName="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
       >
         <h2 className="text-lg font-bold mb-4 text-center">Mau daftar sebagai apa?</h2>
-        <h3 className="text-sm font-normal mb-4 text-center">Pilih tipe akunmu, yuk!</h3>
-
         <div className="flex flex-col space-y-4 mb-6 w-full">
           <button
             onClick={() => setSelectedRole("user")}
@@ -195,16 +153,6 @@ function AuthPage() {
           >
             User
           </button>
-
-          <div className="mt-4 mb-4 relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">atau</span>
-            </div>
-          </div>
-
           <button
             onClick={() => setSelectedRole("seller")}
             className={`px-4 py-2 rounded-md transition w-full ${

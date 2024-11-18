@@ -33,9 +33,7 @@ function ProductSection({ productData }) {
           }
         `}
       </style>
-      <nav className="breadcrumbs text-sm mb-4 text-gray-600">
-        <span>Account</span> / <span>Kue</span> / <span className="font-bold">{productData.name}</span>
-      </nav>
+    
       <div className="flex flex-col md:flex-row">
         {/* Mobile Slider */}
         <div className="w-full md:hidden">
