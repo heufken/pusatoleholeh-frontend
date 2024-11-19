@@ -1,12 +1,14 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import DropdownMenu from "../landing/nav-dropdown";
 
 function Header() {
   const { isAuthenticated, user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleLoginRedirect = () => {
     navigate("/login");
@@ -26,7 +28,7 @@ function Header() {
   };
 
   return (
-    <header className="header bg-white shadow p-4 flex items-center justify-between border-b border-gray-300">
+    <header className="header bg-white shadow p-4 flex items-center justify-between border-b border-gray-300" onMouseLeave={() => setIsDropdownOpen(false)}>
       {/* Logo Section */}
       <div className="logo flex items-center">
         <img src="/logo.png" alt="Pusat Oleh-Oleh" className="h-10 w-auto mr-2" />
@@ -46,23 +48,24 @@ function Header() {
         />
       </div>
 
-      {/* User Section */}
-      <div className="user-icon flex items-center">
+      {/* User Section with Dropdown */}
+      <div className="user-section flex items-center relative" > 
         {isAuthenticated ? (
-          <div className="flex items-center">
+          <div
+            className="relative"
+            onMouseEnter={() => setIsDropdownOpen(true)}
+          >
             <button
-              onClick={handleProfileRedirect}
-              className="flex items-center bg-gray-200 rounded-full p-2 text-gray-600 hover:bg-gray-300"
+              className="border border-gray-800 text-gray-800 font-semibold py-1 px-3 rounded hover:bg-gray-100 transition-colors"
             >
-              <FontAwesomeIcon icon={faUser} />
+              {user?.name || "Profil"}
             </button>
-            <span className="ml-2 hidden md:block">{user?.name || "Profil"}</span>
-            <button
-              onClick={handleLogout}
-              className="ml-4 text-sm text-red-600 hover:underline"
-            >
-              Logout
-            </button>
+            {isDropdownOpen && (
+              <DropdownMenu
+                onProfileClick={handleProfileRedirect}
+                onLogoutClick={handleLogout}
+              />
+            )}
           </div>
         ) : (
           <button
