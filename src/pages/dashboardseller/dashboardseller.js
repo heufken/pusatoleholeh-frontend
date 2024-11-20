@@ -17,11 +17,11 @@ const DashboardSeller = () => {
   };
 
   return (
-    <div className="flex">
-      <Sidebar isCollapsed={isCollapsed} />
-      <div className="flex-grow">
-        <Header toggleSidebar={toggleSidebar} />
-        <div className="p-6">
+    <div>
+      <Header toggleSidebar={toggleSidebar} />
+      <div className="flex mt-16">
+        <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
+        <div className={`flex-grow min-h-screen bg-gradient-to-b from-red-200 via-red-50 to-gray-200 p-6 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
           <Routes>
             <Route path="home" element={<Home />} />
             <Route path="produk" element={<Produk />} />
@@ -31,8 +31,8 @@ const DashboardSeller = () => {
             
             <Route path="/" element={<Navigate to="home" />} />
           </Routes>
+          <Footer />
         </div>
-        <Footer />
       </div>
     </div>
   );
