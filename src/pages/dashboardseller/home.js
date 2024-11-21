@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 
 const Home = () => {
   useEffect(() => {
-    console.log("Home component mounted");
   }, []);
 
   return (

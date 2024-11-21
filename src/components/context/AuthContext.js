@@ -7,42 +7,62 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
-    const token = Cookies.get("authToken");
-    console.log("Token from cookie:", token);
-    
-    if (token) {
+    const authToken = Cookies.get("authToken"); 
+    setToken(authToken); 
+
+    if (authToken) {
       try {
-        const decodedToken = jwtDecode(token);
-        setUser(decodedToken);
-        setIsAuthenticated(true);
+        const decodedToken = jwtDecode(authToken); 
+        setUser(decodedToken); 
+        setIsAuthenticated(true); 
       } catch (error) {
         console.error("Error decoding token:", error);
         setIsAuthenticated(false);
-        setUser(null); // Reset user
+        setUser(null); 
       }
     } else {
       setIsAuthenticated(false);
-      setUser(null); // Reset user jika tidak ada token
+      setUser(null); 
     }
+
+    setIsLoading(false); 
   }, []);
 
-  const login = (token) => {
-    Cookies.set("authToken", token);
-    const decoded = jwtDecode(token);
-    setUser(decoded);
-    setIsAuthenticated(true);
+  const login = (authToken) => {
+    Cookies.set("authToken", authToken); 
+    setToken(authToken); 
+    try {
+      const decoded = jwtDecode(authToken);
+      setUser(decoded); 
+      setIsAuthenticated(true); 
+    } catch (error) {
+      console.error("Error decoding token during login:", error);
+      setIsAuthenticated(false);
+    }
   };
 
   const logout = () => {
-    Cookies.remove("authToken");
-    setIsAuthenticated(false);
-    setUser(null);
+    Cookies.remove("authToken"); 
+    setToken(null); 
+    setIsAuthenticated(false); 
+    setUser(null); 
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        user,
+        token, 
+        login,
+        logout,
+        isLoading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

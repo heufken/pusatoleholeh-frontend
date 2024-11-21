@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
+import { ShopContext, UserContext } from './dashboardseller';  // Pastikan context sudah diimport
 import Modal from 'react-modal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faTimes, faPencilAlt, faTrash } from '@fortawesome/free-solid-svg-icons';
@@ -6,29 +7,41 @@ import { faPlus, faTimes, faPencilAlt, faTrash } from '@fortawesome/free-solid-s
 Modal.setAppElement('#root');
 
 const DataToko = () => {
-  // State untuk mengelola tab yang aktif
+  const shopData = useContext(ShopContext);  // Ambil data dari ShopContext
+  const { addressData } = useContext(UserContext);  // Ambil data dari UserContext
+  const cdnUrl = process.env.REACT_APP_CDN_BASE_URL; 
+  
   const [activeTab, setActiveTab] = useState('Informasi');
-  // State untuk menyimpan catatan toko
   const [catatan, setCatatan] = useState([]);
-  // State untuk mengontrol tampilan modal
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // State untuk menyimpan input judul catatan
   const [judulCatatan, setJudulCatatan] = useState('');
-  // State untuk menyimpan input isi catatan
   const [isiCatatan, setIsiCatatan] = useState('');
-
-  // State untuk menyimpan informasi lokasi toko
   const [lokasi, setLokasi] = useState({
-    alamat: 'Jalan Turi, Tempel',
-    kota: 'Sleman',
-    provinsi: 'Sleman',
-    kodePos: '55735',
+    alamat: '',
+    subdistrict: '',
+    district: '',
+    city: '',
+    provinsi: '',
+    kodePos: '',
   });
-
-  // State untuk mengontrol mode edit lokasi
   const [isEditing, setIsEditing] = useState(false);
 
-  // Fungsi untuk mengubah informasi lokasi
+  useEffect(() => {
+    if (addressData && addressData.length > 0) {
+      const userAddress = addressData[0];
+      setLokasi({
+        alamat: userAddress.name || '',
+        subdistrict: userAddress.subdistrict || '',
+        district: userAddress.district || '',
+        city: userAddress.city || '',
+        provinsi: userAddress.province || '',
+        kodePos: userAddress.postalCode || '',
+      });
+    } else {
+      console.log('No address found in userData');
+    }
+  }, [addressData]); // Mengambil data alamat saat addressData berubah
+
   const handleLokasiChange = (e) => {
     const { name, value } = e.target;
     setLokasi((prevLokasi) => ({
@@ -37,12 +50,10 @@ const DataToko = () => {
     }));
   };
 
-  // Fungsi untuk toggle mode edit lokasi
   const toggleEdit = () => {
     setIsEditing(!isEditing);
   };
 
-  // Fungsi untuk menambah catatan baru
   const tambahCatatan = () => {
     if (judulCatatan.trim() && isiCatatan.trim()) {
       const newCatatan = {
@@ -61,26 +72,32 @@ const DataToko = () => {
     }
   };
 
+  // Fungsi untuk memastikan gambar dapat diakses
+  const getImageUrl = (imagePath) => {
+    if (imagePath && imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    // Jika tidak ada URL lengkap, tambahkan domain atau base URL
+    return `${cdnUrl}${imagePath}`;  // Sesuaikan dengan domain backend Anda
+  };
+
   return (
     <div className="p-6">
       <h1 className="text-xl font-bold mb-4">Data Tokomu</h1>
       <div className="bg-white shadow-md rounded-lg p-6">
-        {/* Tab navigasi */}
         <div className="tabs flex mb-6 border-b">
           {['Informasi', 'Jadwal Operasional', 'Catatan', 'Lokasi'].map((tab) => (
             <button
               key={tab}
-              className={`flex-1 pb-2 text-center ${
-                activeTab === tab ? 'border-b-2 border-black font-semibold' : 'text-gray-500'
-              }`}
+              className={`flex-1 pb-2 text-center ${activeTab === tab ? 'border-b-2 border-black font-semibold' : 'text-gray-500'}`}
               onClick={() => setActiveTab(tab)}
             >
               {tab}
             </button>
           ))}
         </div>
-        
-        {/* Konten untuk tab Informasi */}
+
+        {/* Tab Informasi */}
         {activeTab === 'Informasi' && (
           <>
             <div className="informasi-toko mb-6">
@@ -88,20 +105,16 @@ const DataToko = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="form-group">
                   <label className="block mb-1">Nama Toko</label>
-                  <input type="text" value="Toko Anu" className="w-full p-2 border rounded" />
-                </div>
-                <div className="form-group">
-                  <label className="block mb-1">Slogan</label>
-                  <input type="text" className="w-full p-2 border rounded" />
+                  <input type="text" value={shopData?.name || ''} className="w-full p-2 border rounded" readOnly />
                 </div>
                 <div className="form-group">
                   <label className="block mb-1">Domain Toko</label>
-                  <input type="text" value="Pusatoleholeh.Com/TokoAnu" className="w-full p-2 border rounded" />
+                  <input type="text" value={`Pusatoleholeh.Com/${shopData?.username || ''}`} className="w-full p-2 border rounded" readOnly />
                   <button className="mt-2 p-2 bg-white border border-gray-300 rounded">Ubah</button>
                 </div>
                 <div className="form-group">
                   <label className="block mb-1">Deskripsi</label>
-                  <textarea className="w-full p-2 border rounded"></textarea>
+                  <textarea className="w-full p-2 border rounded" value={shopData?.description || ''} readOnly />
                 </div>
               </div>
               <div className="flex justify-end">
@@ -109,10 +122,28 @@ const DataToko = () => {
               </div>
             </div>
             <hr className="my-6 border-gray-300" />
+            
+            {/* Gambar Banner Toko */}
+            <div className="gambar-banner mb-6">
+              <h2 className="text-lg font-semibold mb-4">Banner Toko</h2>
+              <div className="flex items-center">
+                <img
+                  src={getImageUrl(shopData?.shopBanner)}
+                  alt="Banner Toko"
+                  className="w-full h-48 object-cover rounded mb-4"
+                />
+              </div>
+            </div>
+
+            {/* Gambar Toko */}
             <div className="gambar-toko mb-6">
               <h2 className="text-lg font-semibold mb-4">Gambar Toko</h2>
               <div className="flex items-center">
-                <img src="path/to/image.jpg" alt="Gambar Toko" className="w-48 h-48 object-cover mr-4" />
+                <img
+                  src={getImageUrl(shopData?.shopImage)}
+                  alt="Gambar Toko"
+                  className="w-48 h-48 object-cover mr-4"
+                />
                 <div>
                   <p className="mb-2">Ukuran Foto Harus 300x300</p>
                   <button className="p-2 bg-white border border-gray-300 rounded">Upload</button>
@@ -203,12 +234,14 @@ const DataToko = () => {
         )}
 
         {/* Konten untuk tab Lokasi */}
+
+        {/* Tab Lokasi */}
         {activeTab === 'Lokasi' && (
           <div className="lokasi-toko mb-6">
             <h2 className="text-lg font-semibold mb-4">Lokasi Toko</h2>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block mb-1">Alamat</label>
+                <label className="block mb-1">Nama Alamat</label>
                 <input
                   type="text"
                   name="alamat"
@@ -219,11 +252,33 @@ const DataToko = () => {
                 />
               </div>
               <div>
+                <label className="block mb-1">Subdistrik</label>
+                <input
+                  type="text"
+                  name="subdistrict"
+                  value={lokasi.subdistrict}
+                  onChange={handleLokasiChange}
+                  className="w-full p-2 border rounded"
+                  readOnly={!isEditing}
+                />
+              </div>
+              <div>
+                <label className="block mb-1">Distrik</label>
+                <input
+                  type="text"
+                  name="district"
+                  value={lokasi.district}
+                  onChange={handleLokasiChange}
+                  className="w-full p-2 border rounded"
+                  readOnly={!isEditing}
+                />
+              </div>
+              <div>
                 <label className="block mb-1">Kota</label>
                 <input
                   type="text"
-                  name="kota"
-                  value={lokasi.kota}
+                  name="city"
+                  value={lokasi.city}
                   onChange={handleLokasiChange}
                   className="w-full p-2 border rounded"
                   readOnly={!isEditing}
@@ -264,43 +319,26 @@ const DataToko = () => {
         isOpen={isModalOpen}
         onRequestClose={() => setIsModalOpen(false)}
         className="bg-white p-6 rounded shadow-lg max-w-lg mx-auto mt-20"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
       >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Tambah Catatan Toko</h2>
-          <button onClick={() => setIsModalOpen(false)}>
-            <FontAwesomeIcon icon={faTimes} className="text-gray-500" />
-          </button>
+        <h2 className="text-lg font-semibold mb-4">Tambah Catatan</h2>
+        <div>
+          <label className="block mb-1">Judul</label>
+          <input
+            type="text"
+            value={judulCatatan}
+            onChange={(e) => setJudulCatatan(e.target.value)}
+            className="w-full p-2 border rounded mb-4"
+          />
+          <label className="block mb-1">Isi Catatan</label>
+          <textarea
+            value={isiCatatan}
+            onChange={(e) => setIsiCatatan(e.target.value)}
+            className="w-full p-2 border rounded mb-4"
+          />
         </div>
-        <input
-          type="text"
-          value={judulCatatan}
-          onChange={(e) => setJudulCatatan(e.target.value)}
-          className="w-full p-2 border rounded mb-2"
-          placeholder="Judul Catatan"
-          maxLength={128}
-        />
-        <textarea
-          value={isiCatatan}
-          onChange={(e) => setIsiCatatan(e.target.value)}
-          className="w-full p-2 border rounded mb-2"
-          placeholder="Informasi penting apa yang ingin kamu tulis?"
-          maxLength={6000}
-          rows={4}
-        />
         <div className="flex justify-end">
-          <button
-            onClick={() => setIsModalOpen(false)}
-            className="p-2 bg-white border border-gray-300 rounded mr-2"
-          >
-            Batal
-          </button>
-          <button
-            onClick={tambahCatatan}
-            className="p-2 bg-red-500 text-white rounded"
-          >
-            Simpan
-          </button>
+          <button onClick={tambahCatatan} className="p-2 bg-blue-500 text-white rounded mr-2">Simpan</button>
+          <button onClick={() => setIsModalOpen(false)} className="p-2 bg-red-500 text-white rounded">Batal</button>
         </div>
       </Modal>
     </div>

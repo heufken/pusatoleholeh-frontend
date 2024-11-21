@@ -1,27 +1,27 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useLocation, useNavigate, Link } from "react-router-dom"; 
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import Header from '../components/section/header';
+import Header from "../components/section/header";
+import { ThreeDots } from "react-loader-spinner"; 
 
-const apiUrl = process.env.REACT_APP_API_BASE_URL; 
-const cdnUrl = process.env.REACT_APP_CDN_BASE_URL; 
+const apiUrl = process.env.REACT_APP_API_BASE_URL;
+const cdnUrl = process.env.REACT_APP_CDN_BASE_URL;
 
 const normalizeUrl = (url) => {
   if (!url) return null;
   const cleanedPath = url
-    .replace(/^.*localhost:\d+\//, "/") 
-    .replace(/\\/g, "/"); 
-  return `${cdnUrl}${cleanedPath}` 
+    .replace(/^.*localhost:\d+\//, "/")
+    .replace(/\\/g, "/");
+  return `${cdnUrl}${cleanedPath}`
     .replace(/\/\//g, "/")
-    .replace(":/", "://"); 
+    .replace(":/", "://");
 };
 
 const Search = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const query = new URLSearchParams(location.search).get("q") || "";
-  const searchType =
-    new URLSearchParams(location.search).get("st") || "product";
+  const searchType = new URLSearchParams(location.search).get("st") || "product";
 
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,9 +32,8 @@ const Search = () => {
       const response = await axios.get(`${apiUrl}/search`, {
         params: { st: searchType, q: query },
       });
-      setResults(response.data.results || []); 
+      setResults(response.data.results || []);
     } catch (error) {
-      console.error("Error fetching search results:", error);
       setResults([]);
     } finally {
       setIsLoading(false);
@@ -80,7 +79,13 @@ const Search = () => {
         </div>
         {isLoading ? (
           <div className="flex justify-center items-center mt-10">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-primary border-solid"></div>
+            <ThreeDots
+              height="50"
+              width="50"
+              color="#F87171" 
+              ariaLabel="three-dots-loading"
+              visible={true}
+            />
             <span className="ml-4 text-lg font-medium text-gray-500">
               Loading...
             </span>
@@ -88,31 +93,41 @@ const Search = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {results.length > 0 ? (
-              results.map((result, index) => (
-                <Link
-                  to={`/product/${result._id}`} 
-                  key={index}
-                  className="border p-5 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-200 block"
-                >
-                  <div className="relative">
-                    {result.productCover && (
-                      <img
-                        src={normalizeUrl(result.productCover)} 
-                        alt={result.name}
-                        className="w-full h-48 object-cover rounded-t-lg"
-                      />
-                    )}
-                    <div className="p-4">
-                      <h3 className="font-semibold text-xl text-gray-800 mb-2">
-                        {result.name}
-                      </h3>
-                      <p className="text-gray-600 text-sm">
-                        {result.description || "Deskripsi tidak tersedia"}
-                      </p>
+              results.map((result, index) => {
+                const shopName = result.shopName || result.name || "Nama toko tidak tersedia";
+                const shopDescription =
+                  result.shopDescription || result.description || "Deskripsi tidak tersedia";
+                const linkTo =
+                  searchType === "shop"
+                    ? `/shop/${result.shopName || result.username}`
+                    : `/product/${result._id}`;
+
+                return (
+                  <Link
+                    to={linkTo}
+                    key={index}
+                    className="border p-5 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-200 block"
+                  >
+                    <div className="relative">
+                      {searchType === "product" && result.productCover && (
+                        <img
+                          src={normalizeUrl(result.productCover)}
+                          alt={result.name}
+                          className="w-full h-48 object-cover rounded-t-lg"
+                        />
+                      )}
+                      <div className="p-4">
+                        <h3 className="font-semibold text-xl text-gray-800 mb-2">
+                          {searchType === "shop" ? shopName : result.name}
+                        </h3>
+                        <p className="text-gray-600 text-sm">
+                          {searchType === "shop" ? shopDescription : result.description}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))
+                  </Link>
+                );
+              })
             ) : (
               <p className="text-center text-gray-500 text-lg col-span-full">
                 Tidak ada hasil ditemukan.

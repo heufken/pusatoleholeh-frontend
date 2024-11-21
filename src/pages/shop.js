@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Header from "../components/section/header";
 import Footer from "../components/section/footer";
+import { ThreeDots } from "react-loader-spinner";
 
 const Shop = () => {
   const { shopName } = useParams();
@@ -11,57 +12,56 @@ const Shop = () => {
   const [products, setProducts] = useState([]);
   const [shopBanner, setShopBanner] = useState(null);
   const [shopImage, setShopImage] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const cdnUrl = process.env.REACT_APP_CDN_BASE_URL;
 
-  const normalizeUrl = useCallback((url) => {
-    if (!url) return null;
-    const cleanedPath = url.replace(/^.*localhost:\d+\//, "/").replace(/\\/g, "/");
-    return `${cdnUrl}/${cleanedPath}`.replace(/\/\//g, "/").replace(":/", "://");
-  }, [cdnUrl]);
+  const normalizeUrl = useCallback(
+    (url) => {
+      if (!url) return null;
+      const cleanedPath = url
+        .replace(/^.*localhost:\d+\//, "/")
+        .replace(/\\/g, "/");
+      return `${cdnUrl}/${cleanedPath}`
+        .replace(/\/\//g, "/")
+        .replace(":/", "://");
+    },
+    [cdnUrl]
+  );
 
   useEffect(() => {
     const fetchShopData = async () => {
       try {
-        console.log("Fetching shop data...");
         const response = await axios.get(`${apiUrl}/shop/name/${shopName}`);
         if (response.status === 200) {
           const { shop, banner, image } = response.data;
 
-          console.log("API Response:", response.data);
-
-          const bannerUrl =
-            banner.length > 0 ? normalizeUrl(banner[0].path) : null;
-          const imageUrl =
-            image.length > 0 ? normalizeUrl(image[0].path) : null;
-
-          console.log("Normalized Banner URL:", bannerUrl);
-          console.log("Normalized Image URL:", imageUrl);
+          // const bannerUrl =
+          //   banner.length > 0 ? normalizeUrl(banner[0].path) : null;
+          // const imageUrl =
+          //   image.length > 0 ? normalizeUrl(image[0].path) : null;
 
           setShopData(shop);
           setShopBanner(
             banner.length > 0 ? normalizeUrl(banner[0].path) : null
           );
-          setShopImage(
-            image.length > 0 ? normalizeUrl(image[0].path) : null
-          );
+          setShopImage(image.length > 0 ? normalizeUrl(image[0].path) : null);
 
           if (shop._id) {
             fetchProductsByShopId(shop._id);
           }
         } else {
-          console.error("Shop not found");
           setShopData(null);
         }
       } catch (error) {
-        console.error("Error fetching shop data:", error);
         setShopData(null);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     const fetchProductsByShopId = async (shopId) => {
       try {
-        console.log(`Fetching products for shop ID: ${shopId}`);
         const productResponse = await axios.get(
           `${apiUrl}/product/shop/${shopId}`
         );
@@ -69,7 +69,7 @@ const Shop = () => {
           const productsData = productResponse.data || [];
           const formattedProducts = productsData.map((product) => {
             const productCover = normalizeUrl(product.productCover);
-            console.log(`Normalized Product Cover for ${product.name}:`, productCover);
+
             return {
               ...product,
               productCover,
@@ -78,9 +78,7 @@ const Shop = () => {
 
           setProducts(formattedProducts);
         }
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      }
+      } catch (error) {}
     };
 
     fetchShopData();
@@ -90,11 +88,32 @@ const Shop = () => {
     navigate(`/product/${productId}`);
   };
 
+  if (isLoading) {
+    return (
+      <div>
+        <Header />
+        <div className="flex justify-center items-center min-h-screen">
+          <ThreeDots
+            height="50"
+            width="50"
+            color="#F87171"
+            ariaLabel="three-dots-loading"
+            visible={true}
+          />
+          <span className="ml-4 text-lg font-medium text-gray-500">
+            Loading shop data...
+          </span>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   if (!shopData) {
     return (
       <div>
         <Header />
-        <p className="text-center text-gray-500 mt-8">Loading shop data...</p>
+        <p className="text-center text-gray-500 mt-8">Shop not found.</p>
         <Footer />
       </div>
     );
@@ -115,7 +134,6 @@ const Shop = () => {
             <img
               src={shopBanner}
               alt={`${shopData.name} banner`}
-              onError={() => console.error("Failed to load banner:", shopBanner)}
               className="w-full h-64 object-cover rounded-lg shadow-md"
             />
           ) : (
@@ -130,7 +148,6 @@ const Shop = () => {
               <img
                 src={shopImage}
                 alt={`${shopData.name} logo`}
-                onError={() => console.error("Failed to load shop image:", shopImage)}
                 className="w-24 h-24 object-cover rounded-full shadow-md"
               />
             ) : (
@@ -148,13 +165,16 @@ const Shop = () => {
                   <strong>City:</strong> {address.city || "City not available"}
                 </p>
                 <p>
-                  <strong>District:</strong> {address.district || "District not available"}
+                  <strong>District:</strong>{" "}
+                  {address.district || "District not available"}
                 </p>
                 <p>
-                  <strong>Province:</strong> {address.province || "Province not available"}
+                  <strong>Province:</strong>{" "}
+                  {address.province || "Province not available"}
                 </p>
                 <p>
-                  <strong>Postal Code:</strong> {address.postalCode || "Postal code not available"}
+                  <strong>Postal Code:</strong>{" "}
+                  {address.postalCode || "Postal code not available"}
                 </p>
               </div>
             </div>
@@ -186,11 +206,15 @@ const Shop = () => {
                       <h3 className="text-lg font-bold text-gray-800">
                         {product.name}
                       </h3>
-                      <p className="text-gray-600 text-sm">{product.description}</p>
+                      <p className="text-gray-600 text-sm">
+                        {product.description}
+                      </p>
                       <p className="text-red-500 font-semibold">
                         Price: Rp. {product.price}
                       </p>
-                      <p className="text-gray-700 text-sm">Stock: {product.stock}</p>
+                      <p className="text-gray-700 text-sm">
+                        Stock: {product.stock}
+                      </p>
                     </div>
                   </div>
                 ))}
