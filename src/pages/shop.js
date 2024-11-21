@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import Header from "../components/productdetail/header";
-import Footer from "../components/landing/footer";
+import Header from "../components/section/header";
+import Footer from "../components/section/footer";
 
 const Shop = () => {
   const { shopName } = useParams();
@@ -14,12 +14,11 @@ const Shop = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const cdnUrl = process.env.REACT_APP_CDN_BASE_URL;
 
-  // Fungsi untuk normalisasi URL
-  const normalizeUrl = (url) => {
+  const normalizeUrl = useCallback((url) => {
     if (!url) return null;
     const cleanedPath = url.replace(/^.*localhost:\d+\//, "/").replace(/\\/g, "/");
     return `${cdnUrl}/${cleanedPath}`.replace(/\/\//g, "/").replace(":/", "://");
-  };
+  }, [cdnUrl]);
 
   useEffect(() => {
     const fetchShopData = async () => {
@@ -85,7 +84,7 @@ const Shop = () => {
     };
 
     fetchShopData();
-  }, [shopName, apiUrl, cdnUrl]);
+  }, [normalizeUrl, apiUrl, shopName]);
 
   const handleProductClick = (productId) => {
     navigate(`/product/${productId}`);

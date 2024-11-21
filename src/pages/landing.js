@@ -3,7 +3,7 @@ import Nav from '../components/landing/nav';
 import Hero from '../components/landing/hero';
 import Products from '../components/landing/products';
 import Blog from '../components/landing/blog';
-import Footer from '../components/landing/footer';
+import Footer from '../components/section/footer';
 import ProfilePopup from '../components/landing/ProfilePopup';
 
 const LandingPage = () => {
