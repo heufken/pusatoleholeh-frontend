@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
-import Header from '../../components/dashboardseller/header';
+import Header from '../../components/section/header';
 import Sidebar from '../../components/dashboardseller/sidebar';
 import Footer from '../../components/dashboardseller/footer';
 import Home from './home';

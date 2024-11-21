@@ -1,10 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import Header from "../components/productdetail/header";
+import Header from "../components/section/header";
 import ProductSection from "../components/productdetail/productsection";
 import RelatedProduct from "../components/productdetail/relatedproduct";
 import ReviewsProduct from "../components/productdetail/reviewsproduct";
+import Footer from '../components/section/footer';
+
+const Breadcrumb = () => {
+  return (
+    <nav>
+      <span>Account / Kue / Piscok Bandung</span>
+    </nav>
+  );
+};
 
 const ProductDetail = () => {
   const { productId } = useParams(); 
@@ -52,11 +61,13 @@ const ProductDetail = () => {
   }
 
   return (
-    <div>
+    <div style={{ paddingTop: '80px' }}>
       <Header />
+      <Breadcrumb paths={['Account', 'Kue', 'Piscok Bandung']} />
       <ProductSection productData={productData} />
       <RelatedProduct />
       <ReviewsProduct />
+      <Footer />
     </div>
   );
 };
