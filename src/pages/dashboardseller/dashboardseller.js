@@ -19,6 +19,7 @@ const DashboardSeller = () => {
   const [shopData, setShopData] = useState(null);
   const [userData, setUserData] = useState(null);
   const [addressData, setAddressData] = useState(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isPopupVisible, setPopupVisible] = useState(true); // State untuk kontrol popup
 
   const { token } = useContext(AuthContext);
@@ -62,20 +63,29 @@ const DashboardSeller = () => {
     setPopupVisible(false); // Sembunyikan popup setelah berhasil
   };
 
+  const toggleSidebar = () => setIsCollapsed((prev) => !prev);
+
   return (
     <ShopContext.Provider value={shopData}>
       <UserContext.Provider value={{ userData, addressData }}>
         <div className="flex flex-col min-h-screen">
           {/* Header */}
           <div className="sticky top-0 z-10">
-            <Header />
+            <Header toggleSidebar={toggleSidebar} />
           </div>
 
           {/* Main Content */}
           <div className="flex flex-1 overflow-hidden">
-            {/* Sidebar */}
-            <div className="bg-white shadow-md w-64">
-              <Sidebar />
+             {/* Sidebar */}
+             <div
+              className={`bg-white shadow-md transition-all duration-300 ${
+                isCollapsed ? 'w-16' : 'w-64'
+              }`}
+            >
+              <Sidebar
+                isCollapsed={isCollapsed}
+                toggleSidebar={toggleSidebar}
+              />
             </div>
 
             {/* Content Area */}
