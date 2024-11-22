@@ -1,28 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Nav from '../components/landing/nav';
 import Hero from '../components/landing/hero';
 import Products from '../components/landing/products';
 import Blog from '../components/landing/blog';
 import Footer from '../components/section/footer';
-import ProfilePopup from '../components/landing/ProfilePopup';
 
 const LandingPage = () => {
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-
-  useEffect(() => {
-    const isProfileComplete = localStorage.getItem('isProfileComplete');
-    if (!isProfileComplete) {
-      setIsPopupOpen(true);
-    }
-  }, []);
-
-  const handlePopupToggle = (isOpen) => {
-    setIsPopupOpen(isOpen);
-  };
-
   return (
     <>
-      <div className={isPopupOpen ? 'filter blur-sm' : ''}>
+      <div>
         <Nav />
         <div className="pt-20">
           <Hero />
@@ -37,7 +23,6 @@ const LandingPage = () => {
           Tampilkan Popup
         </button> */}
       </div>
-      <ProfilePopup isOpen={isPopupOpen} onToggle={handlePopupToggle} />
     </>
   );
 };

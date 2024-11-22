@@ -2,6 +2,8 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { AuthContext } from "../../components/context/AuthContext";
+import { toast } from "react-hot-toast";
+
 
 const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
@@ -33,10 +35,10 @@ const AddProduct = () => {
         if (response.data.categories) {
           setCategories(response.data.categories);
         } else {
-          console.error("Kategori tidak ditemukan");
+          
         }
       } catch (error) {
-        console.error("Error fetching categories:", error);
+       
       }
     };
 
@@ -61,15 +63,18 @@ const AddProduct = () => {
   };
 
   const goToNextTab = () => setCurrentTab(currentTab + 1);
-  const goToPreviousTab = () => setCurrentTab(currentTab - 1);
+  // const goToPreviousTab = () => setCurrentTab(currentTab - 1);
 
   const handleProductSubmit = async () => {
+    const toastId = toast.loading("Menyimpan data produk...");
+  
     try {
       if (!productData.name || !productData.price || !productData.stock || !productData.categoryId) {
         setErrorMessage("Semua field harus diisi dengan benar.");
+        toast.error("Gagal menyimpan: pastikan semua data terisi.", { id: toastId });
         return;
       }
-
+  
       const productResponse = await axios.post(
         `${apiUrl}/product/create`,
         {
@@ -81,36 +86,39 @@ const AddProduct = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
+  
       const productId = productResponse.data.product?._id;
       if (!productId) {
-        console.error("Gagal membuat produk: ID produk tidak ditemukan.");
         setErrorMessage("Gagal membuat produk, ID produk tidak ditemukan.");
+        toast.error("Gagal menyimpan produk. Coba lagi nanti.", { id: toastId });
         return;
       }
-
+  
       setProductData((prevData) => ({
         ...prevData,
         id: productId,
       }));
-
+  
+      toast.success("Produk berhasil disimpan!", { id: toastId });
       setErrorMessage("");
-      goToNextTab(); // Pindah ke tab berikutnya untuk upload gambar
+      goToNextTab(); // Pindah ke tab berikutnya
     } catch (error) {
-      console.error("Error saat menambahkan produk:", error);
+      
       setErrorMessage("Gagal menambahkan produk. Silakan coba lagi.");
+      toast.error(`Gagal menyimpan produk: ${error.message}`, { id: toastId });
     }
   };
 
   const handleImageUpload = async () => {
     const { coverImage, productImages, id } = productData;
-
+  
     if (!id) {
-      console.error("ID produk tidak ditemukan. Tidak dapat mengunggah gambar.");
       setErrorMessage("Produk ID tidak ditemukan.");
+
       return;
     }
-
+  
+    const toastId = toast.loading("Mengunggah gambar produk...");
     try {
       if (coverImage) {
         const coverFormData = new FormData();
@@ -121,7 +129,7 @@ const AddProduct = () => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
       }
-
+  
       if (productImages && productImages.length > 0) {
         const imageFormData = new FormData();
         productImages.forEach((file) => {
@@ -133,11 +141,13 @@ const AddProduct = () => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
       }
-
-      setUploadSuccess(true); // Tandai upload berhasil
+  
+      setUploadSuccess(true);
+      toast.success("Gambar berhasil diunggah!", { id: toastId });
     } catch (error) {
-      console.error("Error saat mengunggah gambar:", error);
+      
       setErrorMessage("Gagal mengunggah gambar. Silakan coba lagi.");
+      toast.error(`Gagal mengunggah gambar: ${error.message}`, { id: toastId });
     }
   };
 
@@ -145,7 +155,7 @@ const AddProduct = () => {
     if (!productData.id) {
       await handleProductSubmit();
     }
-
+  
     await handleImageUpload();
   };
 

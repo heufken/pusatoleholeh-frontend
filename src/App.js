@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { Toaster } from 'react-hot-toast';
 import LandingPage from "./pages/landing";
 import LoginPage from "./pages/auth";
 import RegisterPage from "./pages/register";
@@ -31,6 +32,7 @@ function App() {
             <Route path="/add-product" element={<AddProduct />} />
           </Route>
         </Routes>
+        <Toaster position="top-right" reverseOrder={false} />
       </div>
     </Router>
   );

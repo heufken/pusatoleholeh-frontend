@@ -1,115 +1,181 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from "react";
+import axios from "axios";
+import { AuthContext } from "../../components/context/AuthContext";
+import toast from 'react-hot-toast';
 
-const ProfilePopup = ({ isOpen, onToggle }) => {
+const ProfilePopup = ({ onUpdateAddress, onUpdateShop, onClose }) => {
   const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState({
+    name: "",
+    province: "",
+    city: "",
+    district: "",
+    subdistrict: "",
+    postalCode: "",
+  });
+  const [shopData, setShopData] = useState({
+    shopName: "",
+    description: "",
+    username: "",
+  });
+  const [addressId, setAddressId] = useState(null);
+
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const { token } = useContext(AuthContext);
+
+  const handleChange = (e, dataKey) => {
+    const { name, value } = e.target;
+    if (dataKey === "address") {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    } else if (dataKey === "shop") {
+      setShopData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleAddressSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      const response = await axios.post(`${apiUrl}/user/address`, formData, { headers });
+  
+      let createdAddressId = response.data?.address?._id;
+      if (!createdAddressId) {
+        const getAddressResponse = await axios.get(`${apiUrl}/user/address`, { headers });
+        const latestAddress = getAddressResponse.data.address?.[0];
+        createdAddressId = latestAddress?._id;
+      }
+  
+      if (!createdAddressId) throw new Error('Failed to retrieve address ID.');
+  
+      setAddressId(createdAddressId);
+      toast.success('Address successfully saved!');
+      onUpdateAddress(response.data.address);
+  
+      // Setelah alamat berhasil disimpan, lanjutkan ke tab 3 (form untuk data toko)
+      setStep(3); // Ganti ke tab 3
+    } catch (error) {
+      console.error('Error saving address:', error);
+      toast.error('Failed to save address. Please try again.');
+    }
+  };
+
+  const handleShopSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      const payload = {
+        name: shopData.shopName,
+        description: shopData.description,
+        addressId,
+        username: shopData.username,
+      };
+  
+      const response = await axios.post(`${apiUrl}/shop/create`, payload, { headers });
+  
+      toast.success('Shop data successfully saved!');
+      onUpdateShop(response.data.shop);
+  
+      // Beralih ke tab 4 setelah berhasil menyimpan data toko
+      setStep(4);  // Beralih ke tab 4 (konfirmasi selesai)
+    } catch (error) {
+      console.error('Error saving shop data:', error);
+      toast.error('Failed to save shop data. Please try again.');
+    }
+  };
+  
 
   const handleNext = () => {
     setStep(step + 1);
   };
 
+  const handleSkip = () => {
+    setStep(step + 1); // Skip to the next step
+  };
+
   const togglePopup = () => {
-    onToggle(false);
-    localStorage.setItem('isProfileComplete', 'true');
+    onClose(); // Close the popup
   };
 
   return (
-    <>
-      {isOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-end md:items-center z-50">
-          <div className="bg-white p-4 md:p-8 rounded-t-lg md:rounded-lg shadow-lg w-full md:w-1/2 max-h-[90vh] overflow-y-auto relative">
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
+      <div className="bg-white p-4 rounded shadow-lg w-full md:w-1/2">
+        {step === 1 && (
+          <>
+            <h2 className="text-xl font-bold mb-4">Complete your profile!</h2>
+            <p className="mb-6">Please complete your account information to access the website!</p>
             <button
-              onClick={togglePopup}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              onClick={handleNext}
+              className="bg-blue-500 text-white px-4 py-2 rounded w-full"
             >
-              &times;
+              Okay
             </button>
-            {step === 1 && (
-              <>
-                <h2 className="text-xl md:text-2xl font-bold mb-4">Complete your profile!</h2>
-                <p className="mb-6">Please complete your account information to access the website!</p>
-                <button
-                  onClick={handleNext}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 md:px-6 md:py-2 rounded w-full"
-                >
-                  Okay
-                </button>
-              </>
-            )}
-            {step === 2 && (
-              <>
-                <h2 className="text-xl md:text-2xl font-bold mb-4">Tell us about your address</h2>
-                <p className="mb-6">Please complete your address information to access the website.</p>
-                <form>
-                  <label className="block mb-2">Address Name</label>
-                  <input type="text" placeholder="Address Name" className="w-full mb-4 p-2 border rounded" />
-
-                  <label className="block mb-2">Province</label>
-                  <input type="text" placeholder="Province" className="w-full mb-4 p-2 border rounded" />
-
-                  <label className="block mb-2">City</label>
-                  <input type="text" placeholder="City" className="w-full mb-4 p-2 border rounded" />
-
-                  <label className="block mb-2">District</label>
-                  <input type="text" placeholder="District" className="w-full mb-4 p-2 border rounded" />
-
-                  <label className="block mb-2">Sub-district</label>
-                  <input type="text" placeholder="Sub-district" className="w-full mb-4 p-2 border rounded" />
-
-                  <label className="block mb-2">Postal Code</label>
-                  <input type="text" placeholder="Postal Code" className="w-full mb-4 p-2 border rounded" />
-
-                  <button
-                    onClick={handleNext}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 md:px-6 md:py-2 rounded w-full"
-                  >
-                    Next
-                  </button>
-                </form>
-              </>
-            )}
-            {step === 3 && (
-              <>
-                <h2 className="text-xl md:text-2xl font-bold mb-4">Wanna add profile picture?</h2>
-                <p className="mb-6">You can upload your profile picture here or add it later.</p>
-                <div className="border-dashed border-2 border-gray-300 p-6 mb-4 text-center">
-                  <p>Drag and drop or select image to upload</p>
-                  <p className="text-sm text-gray-500">( Maximum 3mb. )</p>
-                </div>
-                <div className="flex justify-between">
-                  <button
-                    onClick={togglePopup}
-                    className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 md:px-6 md:py-2 rounded"
-                  >
-                    Skip
-                  </button>
-                  <button
-                    onClick={handleNext}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 md:px-6 md:py-2 rounded"
-                  >
-                    Next
-                  </button>
-                </div>
-              </>
-            )}
-            {step === 4 && (
-              <>
-                <h2 className="text-xl md:text-2xl font-bold mb-4">Profile setup completed</h2>
-                <p className="mb-6">Browse the website and shop now</p>
-                <div className="flex justify-center mb-6">
-                  <span className="text-4xl">✔️</span>
-                </div>
-                <button
-                  onClick={togglePopup}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 md:px-6 md:py-2 rounded w-full"
-                >
-                  Let's go
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-    </>
+          </>
+        )}
+        {step === 2 && (
+          <form onSubmit={handleAddressSubmit}>
+            <h2 className="text-xl font-bold mb-4">Tell us about your address</h2>
+            {[ "name", "province", "city", "district", "subdistrict", "postalCode" ].map((field) => (
+              <div key={field} className="mb-4">
+                <label className="block mb-2 capitalize">{field}</label>
+                <input
+                  type="text"
+                  name={field}
+                  value={formData[field]}
+                  onChange={(e) => handleChange(e, "address")}
+                  className="w-full p-2 border rounded"
+                  required
+                />
+              </div>
+            ))}
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-4 py-2 rounded w-full"
+            >
+              Save Address
+            </button>
+          </form>
+        )}
+        {step === 3 && (
+          <form onSubmit={handleShopSubmit}>
+            <h2 className="text-xl font-bold mb-4">Complete Your Shop Information</h2>
+            {["shopName", "description", "username"].map((field) => (
+              <div key={field} className="mb-4">
+                <label className="block mb-2 capitalize">{field === "shopName" ? "Name" : field}</label>
+                <input
+                  type="text"
+                  name={field}
+                  value={shopData[field]}
+                  onChange={(e) => handleChange(e, "shop")}
+                  className="w-full p-2 border rounded"
+                  required
+                />
+              </div>
+            ))}
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-4 py-2 rounded w-full"
+            >
+              Save Shop Data
+            </button>
+          </form>
+        )}
+        {step === 4 && (
+          <>
+            <h2 className="text-xl font-bold mb-4">Profile setup completed!</h2>
+            <p className="mb-6">You can now browse the website and shop freely.</p>
+            <div className="flex justify-center mb-6">
+              <span className="text-4xl">✔️</span>
+            </div>
+            <button
+               onClick={onClose}  // Menutup popup setelah konfirmasi
+              className="bg-blue-500 text-white px-4 py-2 rounded w-full"
+            >
+              Let's Go
+            </button>
+          </>
+        )}
+      </div>
+    </div>
   );
 };
 

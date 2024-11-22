@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from 'react-hot-toast';
 
 function RegisterSellerPage() {
   const navigate = useNavigate();
@@ -52,13 +53,13 @@ function RegisterSellerPage() {
       const data = await response.json();
 
       if (response.ok) {
-        alert("Registrasi berhasil!");
+        toast.success("Registrasi berhasil!");
         navigate("/login");
       } else {
         setError(data.message || "Terjadi kesalahan");
       }
     } catch (err) {
-      setError("Gagal terhubung ke server");
+      toast.error("Gagal terhubung ke server");
     } finally {
       setLoading(false);
     }

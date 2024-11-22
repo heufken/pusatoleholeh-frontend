@@ -111,7 +111,6 @@ function AuthPage() {
 
             <div className="text-right">
               <button
-                onClick={() => alert("Navigasi ke halaman lupa password")}
                 className="text-red-500 text-sm"
               >
                 Lupa password?

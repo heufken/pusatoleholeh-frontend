@@ -47,7 +47,7 @@ function Header() {
           value={searchQuery}
           onChange={handleSearchChange}
           onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit()}
-          placeholder="Apa Yang Anda Inginkan?"
+          placeholder="Lagi mau cari apa hari ini?"
           className="bg-transparent border-none rounded-full p-2 flex-grow focus:outline-none"
         />
       </div>

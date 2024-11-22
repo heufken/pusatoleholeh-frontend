@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { ShopContext, UserContext } from './dashboardseller';  // Pastikan context sudah diimport
 import Modal from 'react-modal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faTimes, faPencilAlt, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faPencilAlt, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 Modal.setAppElement('#root');
 

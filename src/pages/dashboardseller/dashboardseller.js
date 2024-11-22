@@ -10,6 +10,7 @@ import DataToko from './datatoko';
 import Pesanan from './pesanan';
 import Keuangan from './keuangan';
 import { AuthContext } from '../../components/context/AuthContext';
+import ProfilePopup from '../../components/landing/ProfilePopup';
 
 export const ShopContext = createContext();
 export const UserContext = createContext();
@@ -18,7 +19,7 @@ const DashboardSeller = () => {
   const [shopData, setShopData] = useState(null);
   const [userData, setUserData] = useState(null);
   const [addressData, setAddressData] = useState(null);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isPopupVisible, setPopupVisible] = useState(true); // State untuk kontrol popup
 
   const { token } = useContext(AuthContext);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -34,18 +35,32 @@ const DashboardSeller = () => {
           axios.get(`${apiUrl}/user/address`, { headers }),
         ]);
 
-        setShopData(shopResponse.data.shop);
-        setUserData(userResponse.data.user);
-        setAddressData(addressResponse.data.address);
+        setShopData(shopResponse.data.shop || null);
+        setUserData(userResponse.data.user || null);
+        setAddressData(addressResponse.data.address || null);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error('Error fetching data:', error);
       }
     };
 
     if (token) fetchData();
   }, [apiUrl, token]);
 
-  const toggleSidebar = () => setIsCollapsed((prev) => !prev);
+  const updateAddressData = (newAddress) => {
+    setAddressData(newAddress);
+  };
+
+  const updateShopData = (newShopData) => {
+    setShopData(newShopData);
+  };
+
+  // Cek apakah data address atau shop belum lengkap
+  const isProfileIncomplete = !addressData || !shopData;
+
+  // Fungsi untuk menutup popup
+  const handleClosePopup = () => {
+    setPopupVisible(false); // Sembunyikan popup setelah berhasil
+  };
 
   return (
     <ShopContext.Provider value={shopData}>
@@ -53,27 +68,18 @@ const DashboardSeller = () => {
         <div className="flex flex-col min-h-screen">
           {/* Header */}
           <div className="sticky top-0 z-10">
-            <Header toggleSidebar={toggleSidebar} />
+            <Header />
           </div>
 
           {/* Main Content */}
           <div className="flex flex-1 overflow-hidden">
             {/* Sidebar */}
-            <div
-              className={`bg-white shadow-md transition-all duration-300 ${
-                isCollapsed ? 'w-16' : 'w-64'
-              }`}
-            >
-              <Sidebar
-                isCollapsed={isCollapsed}
-                toggleSidebar={toggleSidebar}
-              />
+            <div className="bg-white shadow-md w-64">
+              <Sidebar />
             </div>
 
             {/* Content Area */}
-            <div
-              className="flex-grow bg-gradient-to-b from-red-200 via-red-50 to-gray-200 p-6 overflow-auto"
-            >
+            <div className="flex-grow bg-gradient-to-b from-red-200 via-red-50 to-gray-200 p-6 overflow-auto">
               <Routes>
                 <Route path="home" element={<Home />} />
                 <Route path="produk" element={<Produk />} />
@@ -87,6 +93,15 @@ const DashboardSeller = () => {
 
           {/* Footer */}
           <Footer />
+
+          {/* Profile Popup */}
+          {isProfileIncomplete && isPopupVisible && (
+            <ProfilePopup
+              onUpdateAddress={updateAddressData}
+              onUpdateShop={updateShopData}
+              onClose={handleClosePopup} // Berikan fungsi onClose
+            />
+          )}
         </div>
       </UserContext.Provider>
     </ShopContext.Provider>

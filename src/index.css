@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @layer base {
+  
   @font-face {
     font-family: 'Proxima Nova';
     src: url('../public/fonts/proximanova-regular.otf') format('opentype');
