@@ -32,13 +32,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           {showText && <span>Sembunyikan Menu</span>}
         </button>
         <NavLink 
-          to="/dashboard-seller/profile" 
-          className={({ isActive }) => navItemClass(isActive)}
-        >
-          <FontAwesomeIcon icon={faUser} />
-          {showText && <span>Fahmi Sumbul</span>}
-        </NavLink>
-        <NavLink 
           to="/dashboard-seller/home" 
           className={({ isActive }) => navItemClass(isActive)}
         >
@@ -72,6 +65,13 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         >
           <FontAwesomeIcon icon={faMoneyBill} />
           {showText && <span>Keuangan</span>}
+        </NavLink>
+        <NavLink 
+          to="/dashboard-seller/profile" 
+          className={({ isActive }) => navItemClass(isActive)}
+        >
+          <FontAwesomeIcon icon={faUser} />
+          {showText && <span>Data Pengguna</span>}
         </NavLink>
       </div>
     </aside>

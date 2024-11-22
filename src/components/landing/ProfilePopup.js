@@ -88,13 +88,13 @@ const ProfilePopup = ({ onUpdateAddress, onUpdateShop, onClose }) => {
     setStep(step + 1);
   };
 
-  const handleSkip = () => {
-    setStep(step + 1); // Skip to the next step
-  };
+  // const handleSkip = () => {
+  //   setStep(step + 1); // Skip to the next step
+  // };
 
-  const togglePopup = () => {
-    onClose(); // Close the popup
-  };
+  // const togglePopup = () => {
+  //   onClose(); // Close the popup
+  // };
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">

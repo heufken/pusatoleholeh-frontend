@@ -19,7 +19,7 @@ const DashboardSeller = () => {
   const [shopData, setShopData] = useState(null);
   const [userData, setUserData] = useState(null);
   const [addressData, setAddressData] = useState(null);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [isPopupVisible, setPopupVisible] = useState(true); // State untuk kontrol popup
 
   const { token } = useContext(AuthContext);
