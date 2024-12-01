@@ -2,6 +2,8 @@ import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import DropdownMenu from "./nav-dropdown";
+import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function Nav() {
   const navigate = useNavigate();
@@ -16,7 +18,7 @@ function Nav() {
     if (user?.role === "buyer") {
       navigate("/buyerprofile");
     } else if (user?.role === "seller") {
-      navigate("/dashboardseller");
+      navigate("/dashboard-seller");
     }
   };
 
@@ -35,9 +37,9 @@ function Nav() {
             onMouseEnter={() => setIsDropdownOpen(true)}
           >
             <button
-              className="border border-gray-800 text-gray-800 font-semibold py-1 px-3 rounded hover:bg-gray-100 transition-colors"
+              className="border border-gray-800 text-gray-800 font-semibold py-1 px-3 rounded-full hover:bg-gray-100 transition-colors focus:outline-none"
             >
-              {user?.name || "Profil"}
+              {user?.name || <FontAwesomeIcon icon={faUser} />}
             </button>
             {isDropdownOpen && (
               <DropdownMenu
@@ -49,9 +51,9 @@ function Nav() {
         ) : (
           <button
             onClick={handleLoginRedirect}
-            className="border border-gray-800 text-gray-800 font-semibold py-1 px-3 rounded hover:bg-gray-100 transition-colors"
+            className="border border-gray-800 text-gray-800 font-semibold py-1 px-3 rounded-lg hover:bg-gray-300 transition-colors focus:outline-none"
           >
-            Masuk
+            <span>Masuk</span>
           </button>
         )}
       </div>

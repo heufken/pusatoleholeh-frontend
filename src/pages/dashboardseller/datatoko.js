@@ -3,14 +3,19 @@ import { ShopContext, UserContext } from './dashboardseller';  // Pastikan conte
 import Modal from 'react-modal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faPencilAlt, faTrash } from '@fortawesome/free-solid-svg-icons';
+import axios from 'axios';
+import { toast } from 'react-hot-toast';
+import { AuthContext } from '../../components/context/AuthContext'; // Tambahkan impor ini
 
 Modal.setAppElement('#root');
 
 const DataToko = () => {
   const shopData = useContext(ShopContext);  // Ambil data dari ShopContext
   const { addressData } = useContext(UserContext);  // Ambil data dari UserContext
-  const cdnUrl = process.env.REACT_APP_CDN_BASE_URL; 
-  
+  const { token } = useContext(AuthContext); // Dapatkan token dari AuthContext
+  const apiUrl = process.env.REACT_APP_API_BASE_URL; // Dapatkan apiUrl dari variabel lingkungan
+  const cdnUrl = process.env.REACT_APP_CDN_URL; // Definisikan cdnUrl dengan variabel lingkungan yang sesuai
+
   const [activeTab, setActiveTab] = useState('Informasi');
   const [catatan, setCatatan] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,6 +30,7 @@ const DataToko = () => {
     kodePos: '',
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [shopDataState, setShopData] = useState(shopData); // Gunakan useState untuk shopData
 
   useEffect(() => {
     if (addressData && addressData.length > 0) {
@@ -54,21 +60,22 @@ const DataToko = () => {
     setIsEditing(!isEditing);
   };
 
-  const tambahCatatan = () => {
-    if (judulCatatan.trim() && isiCatatan.trim()) {
-      const newCatatan = {
-        judul: judulCatatan,
-        isi: isiCatatan,
-        tanggal: new Date().toLocaleDateString('id-ID', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-        }),
+  const saveChanges = async () => {
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      const payload = {
+        name: shopDataState.name,
+        description: shopDataState.description,
+        // Tambahkan data lain yang ingin disimpan
       };
-      setCatatan([...catatan, newCatatan]);
-      setJudulCatatan('');
-      setIsiCatatan('');
-      setIsModalOpen(false);
+
+      const response = await axios.put(`${apiUrl}/shop/update`, payload, { headers });
+      setShopData(response.data.shop); // Perbarui state dengan data terbaru
+      toast.success('Data toko berhasil disimpan!');
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving shop data:', error);
+      toast.error('Gagal menyimpan data toko. Silakan coba lagi.');
     }
   };
 
@@ -79,6 +86,25 @@ const DataToko = () => {
     }
     // Jika tidak ada URL lengkap, tambahkan domain atau base URL
     return `${cdnUrl}${imagePath}`;  // Sesuaikan dengan domain backend Anda
+  };
+
+  const tambahCatatan = async () => {
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      const payload = {
+        title: judulCatatan,
+        content: isiCatatan,
+        // Tambahkan data lain yang diperlukan
+      };
+
+      await axios.post(`${apiUrl}/shop/notes`, payload, { headers });
+      toast.success('Catatan berhasil ditambahkan!');
+      setIsModalOpen(false);
+      // Tambahkan logika untuk memperbarui state catatan jika diperlukan
+    } catch (error) {
+      console.error('Error adding note:', error);
+      toast.error('Gagal menambahkan catatan. Silakan coba lagi.');
+    }
   };
 
   return (
@@ -105,20 +131,39 @@ const DataToko = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="form-group">
                   <label className="block mb-1">Nama Toko</label>
-                  <input type="text" value={shopData?.name || ''} className="w-full p-2 border rounded" readOnly />
+                  <input
+                    type="text"
+                    value={shopDataState?.name || ''}
+                    onChange={(e) => setShopData({ ...shopDataState, name: e.target.value })}
+                    className="w-full p-2 border rounded"
+                    readOnly={!isEditing}
+                  />
                 </div>
                 <div className="form-group">
                   <label className="block mb-1">Domain Toko</label>
-                  <input type="text" value={`Pusatoleholeh.Com/${shopData?.username || ''}`} className="w-full p-2 border rounded" readOnly />
-                  <button className="mt-2 p-2 bg-white border border-gray-300 rounded">Ubah</button>
+                  <input
+                    type="text"
+                    value={`Pusatoleholeh.Com/${shopDataState?.username || ''}`}
+                    className="w-full p-2 border rounded"
+                    readOnly
+                  />
                 </div>
                 <div className="form-group">
                   <label className="block mb-1">Deskripsi</label>
-                  <textarea className="w-full p-2 border rounded" value={shopData?.description || ''} readOnly />
+                  <textarea
+                    className="w-full p-2 border rounded"
+                    value={shopDataState?.description || ''}
+                    onChange={(e) => setShopData({ ...shopDataState, description: e.target.value })}
+                    readOnly={!isEditing}
+                  />
                 </div>
               </div>
               <div className="flex justify-end">
-                <button className="mt-4 p-2 bg-red-500 text-white rounded">Simpan</button>
+                {isEditing ? (
+                  <button onClick={saveChanges} className="mt-4 p-2 bg-blue-500 text-white rounded">Simpan</button>
+                ) : (
+                  <button onClick={toggleEdit} className="mt-4 p-2 bg-red-500 text-white rounded">Ubah</button>
+                )}
               </div>
             </div>
             <hr className="my-6 border-gray-300" />
@@ -128,7 +173,7 @@ const DataToko = () => {
               <h2 className="text-lg font-semibold mb-4">Banner Toko</h2>
               <div className="flex items-center">
                 <img
-                  src={getImageUrl(shopData?.shopBanner)}
+                  src={getImageUrl(shopDataState?.shopBanner)}
                   alt="Banner Toko"
                   className="w-full h-48 object-cover rounded mb-4"
                 />
@@ -140,7 +185,7 @@ const DataToko = () => {
               <h2 className="text-lg font-semibold mb-4">Gambar Toko</h2>
               <div className="flex items-center">
                 <img
-                  src={getImageUrl(shopData?.shopImage)}
+                  src={getImageUrl(shopDataState?.shopImage)}
                   alt="Gambar Toko"
                   className="w-48 h-48 object-cover mr-4"
                 />
