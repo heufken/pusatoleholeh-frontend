@@ -20,7 +20,7 @@ const DashboardSeller = () => {
   const [userData, setUserData] = useState(null);
   const [addressData, setAddressData] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(true);
-  const [isPopupVisible, setPopupVisible] = useState(true); // State untuk kontrol popup
+  const [isPopupVisible, setPopupVisible] = useState(false);
 
   const { token } = useContext(AuthContext);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -39,6 +39,10 @@ const DashboardSeller = () => {
         setShopData(shopResponse.data.shop || null);
         setUserData(userResponse.data.user || null);
         setAddressData(addressResponse.data.address || null);
+
+        if (!shopResponse.data.shop || !addressResponse.data.address) {
+          setPopupVisible(true);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -49,18 +53,20 @@ const DashboardSeller = () => {
 
   const updateAddressData = (newAddress) => {
     setAddressData(newAddress);
+    if (shopData && newAddress) {
+      setPopupVisible(false);
+    }
   };
 
   const updateShopData = (newShopData) => {
     setShopData(newShopData);
+    if (newShopData && addressData) {
+      setPopupVisible(false);
+    }
   };
 
-  // Cek apakah data address atau shop belum lengkap
-  const isProfileIncomplete = !addressData || !shopData;
-
-  // Fungsi untuk menutup popup
   const handleClosePopup = () => {
-    setPopupVisible(false); // Sembunyikan popup setelah berhasil
+    setPopupVisible(false);
   };
 
   const toggleSidebar = () => setIsCollapsed((prev) => !prev);
@@ -76,8 +82,8 @@ const DashboardSeller = () => {
 
           {/* Main Content */}
           <div className="flex flex-1 overflow-hidden">
-             {/* Sidebar */}
-             <div
+            {/* Sidebar */}
+            <div
               className={`bg-white shadow-md transition-all duration-300 ${
                 isCollapsed ? 'w-16' : 'w-64'
               }`}
@@ -105,11 +111,11 @@ const DashboardSeller = () => {
           <Footer />
 
           {/* Profile Popup */}
-          {isProfileIncomplete && isPopupVisible && (
+          {isPopupVisible && (
             <ProfilePopup
               onUpdateAddress={updateAddressData}
               onUpdateShop={updateShopData}
-              onClose={handleClosePopup} // Berikan fungsi onClose
+              onClose={handleClosePopup}
             />
           )}
         </div>

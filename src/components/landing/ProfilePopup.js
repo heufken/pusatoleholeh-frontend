@@ -82,30 +82,21 @@ const ProfilePopup = ({ onUpdateAddress, onUpdateShop, onClose }) => {
       toast.error('Failed to save shop data. Please try again.');
     }
   };
-  
 
   const handleNext = () => {
     setStep(step + 1);
   };
 
-  // const handleSkip = () => {
-  //   setStep(step + 1); // Skip to the next step
-  // };
-
-  // const togglePopup = () => {
-  //   onClose(); // Close the popup
-  // };
-
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white p-4 rounded shadow-lg w-full md:w-1/2">
+    <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md mx-4">
         {step === 1 && (
           <>
-            <h2 className="text-xl font-bold mb-4">Complete your profile!</h2>
-            <p className="mb-6">Please complete your account information to access the website!</p>
+            <h2 className="text-2xl font-semibold mb-4 text-center">Complete your profile!</h2>
+            <p className="mb-6 text-center text-gray-600">Please complete your account information to access the website!</p>
             <button
               onClick={handleNext}
-              className="bg-blue-500 text-white px-4 py-2 rounded w-full"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full hover:bg-blue-700 transition-colors"
             >
               Okay
             </button>
@@ -113,23 +104,23 @@ const ProfilePopup = ({ onUpdateAddress, onUpdateShop, onClose }) => {
         )}
         {step === 2 && (
           <form onSubmit={handleAddressSubmit}>
-            <h2 className="text-xl font-bold mb-4">Tell us about your address</h2>
-            {[ "name", "province", "city", "district", "subdistrict", "postalCode" ].map((field) => (
+            <h2 className="text-2xl font-semibold mb-4 text-center">Tell us about your address</h2>
+            {["name", "province", "city", "district", "subdistrict", "postalCode"].map((field) => (
               <div key={field} className="mb-4">
-                <label className="block mb-2 capitalize">{field}</label>
+                <label className="block mb-2 capitalize text-gray-700">{field}</label>
                 <input
                   type="text"
                   name={field}
                   value={formData[field]}
                   onChange={(e) => handleChange(e, "address")}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>
             ))}
             <button
               type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded w-full"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full hover:bg-blue-700 transition-colors"
             >
               Save Address
             </button>
@@ -137,23 +128,23 @@ const ProfilePopup = ({ onUpdateAddress, onUpdateShop, onClose }) => {
         )}
         {step === 3 && (
           <form onSubmit={handleShopSubmit}>
-            <h2 className="text-xl font-bold mb-4">Complete Your Shop Information</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-center">Complete Your Shop Information</h2>
             {["shopName", "description", "username"].map((field) => (
               <div key={field} className="mb-4">
-                <label className="block mb-2 capitalize">{field === "shopName" ? "Name" : field}</label>
+                <label className="block mb-2 capitalize text-gray-700">{field === "shopName" ? "Name" : field}</label>
                 <input
                   type="text"
                   name={field}
                   value={shopData[field]}
                   onChange={(e) => handleChange(e, "shop")}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>
             ))}
             <button
               type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded w-full"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full hover:bg-blue-700 transition-colors"
             >
               Save Shop Data
             </button>
@@ -161,14 +152,14 @@ const ProfilePopup = ({ onUpdateAddress, onUpdateShop, onClose }) => {
         )}
         {step === 4 && (
           <>
-            <h2 className="text-xl font-bold mb-4">Profile setup completed!</h2>
-            <p className="mb-6">You can now browse the website and shop freely.</p>
+            <h2 className="text-2xl font-semibold mb-4 text-center">Profile setup completed!</h2>
+            <p className="mb-6 text-center text-gray-600">You can now browse the website and shop freely.</p>
             <div className="flex justify-center mb-6">
-              <span className="text-4xl">✔️</span>
+              <span className="text-4xl text-green-500">✔️</span>
             </div>
             <button
-               onClick={onClose}  // Menutup popup setelah konfirmasi
-              className="bg-blue-500 text-white px-4 py-2 rounded w-full"
+              onClick={onClose}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full hover:bg-blue-700 transition-colors"
             >
               Let's Go
             </button>

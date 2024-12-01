@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faSearch, faUser } from "@fortawesome/free-solid-svg-icons";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import DropdownMenu from "../landing/nav-dropdown";
@@ -60,9 +60,9 @@ function Header() {
             onMouseEnter={() => setIsDropdownOpen(true)}
           >
             <button
-              className="border border-gray-800 text-gray-800 font-semibold py-1 px-3 rounded hover:bg-gray-100 transition-colors"
+              className=" text-gray-800 font-semibold py-1 px-3 rounded-full hover:bg-gray-300 transition-colors focus:outline-none"
             >
-              {user?.name || "Profil"}
+              <FontAwesomeIcon icon={faUser} className="mr-2" />
             </button>
             {isDropdownOpen && (
               <DropdownMenu
@@ -76,7 +76,7 @@ function Header() {
         ) : (
           <button
             onClick={handleLoginRedirect}
-            className="border border-gray-800 text-gray-800 font-semibold py-1 px-3 rounded hover:bg-gray-100 transition-colors"
+            className="border border-gray-800 text-gray-800 font-semibold py-1 px-3 rounded hover:bg-gray-300 transition-colors focus:outline-none"
           >
             Masuk
           </button>
