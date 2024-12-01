@@ -30,6 +30,7 @@ const Produk = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [editModalTab, setEditModalTab] = useState("details");
+  const [productImages, setProductImages] = useState([]);
 
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const cdnUrl = process.env.REACT_APP_CDN_BASE_URL;
@@ -201,14 +202,17 @@ const Produk = () => {
   };
 
   const openEditModal = (product) => {
-    // Menggunakan 'productCover' untuk mengisi editProduct.cover
     setEditProduct({ ...product, cover: product.productCover });
+    setProductImages(product.productImages || []);
+    setEditModalTab("details");
     setIsModalOpen(true);
+    setOpenDropdownId(null);
   };
 
   const closeEditModal = () => {
     setEditProduct(null);
     setIsModalOpen(false);
+    fetchProducts();
   };
 
   const handleEditProduct = async (updatedProduct) => {
@@ -258,11 +262,11 @@ const Produk = () => {
 
   const handleUpdateCover = async (file) => {
     const toastId = toast.loading("Mengunggah cover...");
-  
+
     try {
       const formData = new FormData();
       formData.append("image", file);
-  
+
       const response = await axios.put(
         `${apiUrl}/product/update/cover/${editProduct._id}`,
         formData,
@@ -273,25 +277,75 @@ const Produk = () => {
           },
         }
       );
-  
+
+      setEditProduct(prev => ({
+        ...prev,
+        cover: response.data.productCover.url
+      }));
+
       toast.success("Cover produk berhasil diperbarui!", { id: toastId });
-  
-      // Tutup modal
-      closeEditModal();
-  
-      // Pastikan modal tertutup, lalu refresh daftar produk
-      setTimeout(fetchProducts, 300); // Beri jeda jika diperlukan untuk animasi modal
     } catch (err) {
       toast.error(
-        `Gagal memperbarui cover: ${
-          err.response?.data?.message || err.message
-        }`,
+        `Gagal memperbarui cover: ${err.response?.data?.message || err.message}`,
         { id: toastId }
       );
     }
   };
-  
-  
+
+  const handleUploadImages = async (files) => {
+    const toastId = toast.loading("Mengunggah gambar produk...");
+
+    try {
+      if (productImages.length + files.length > 5) {
+        throw new Error("Total gambar tidak boleh lebih dari 5");
+      }
+
+      const formData = new FormData();
+      Array.from(files).forEach((file) => {
+        formData.append("image", file);
+      });
+
+      const response = await axios.post(
+        `${apiUrl}/product/upload/image/${editProduct._id}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      setProductImages([...productImages, ...response.data.uploadedImages]);
+      toast.success("Gambar produk berhasil diunggah!", { id: toastId });
+    } catch (err) {
+      toast.error(
+        `Gagal mengunggah gambar: ${err.response?.data?.message || err.message}`,
+        { id: toastId }
+      );
+    }
+  };
+
+  const handleDeleteImage = async (productImageId) => {
+    const toastId = toast.loading("Menghapus gambar produk...");
+
+    try {
+      await axios.delete(
+        `${apiUrl}/product/delete/image/${editProduct._id}/${productImageId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setProductImages(productImages.filter((img) => img.id !== productImageId));
+      toast.success("Gambar produk berhasil dihapus!", { id: toastId });
+    } catch (err) {
+      toast.error(
+        `Gagal menghapus gambar: ${err.response?.data?.message || err.message}`,
+        { id: toastId }
+      );
+    }
+  };
 
   if (loading) {
     return (
@@ -515,7 +569,9 @@ const Produk = () => {
                           </li>
                           <li
                             className="px-4 py-2 cursor-pointer hover:bg-gray-100 flex items-center"
-                            onClick={() => openEditModal(product)}
+                            onClick={() => {
+                              openEditModal(product);
+                            }}
                           >
                             <FontAwesomeIcon icon={faEdit} className="mr-2" />
                             Edit
@@ -541,42 +597,53 @@ const Produk = () => {
       </div>
       {isModalOpen && editProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white w-96 p-6 rounded shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Edit Produk</h2>
-            <div className="mb-4">
-              <ul className="flex border-b">
-                <li className="mr-1">
+          <div className="bg-white w-[600px] p-8 rounded-xl shadow-2xl">
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">Edit Produk</h2>
+            <div className="mb-6">
+              <ul className="flex space-x-4 border-b border-gray-200">
+                <li>
                   <button
-                    className={`px-4 py-2 ${
+                    className={`px-6 py-3 font-medium rounded-t-lg transition-all duration-200 ${
                       editModalTab === "details"
-                        ? "bg-red-500 text-white"
-                        : "bg-gray-200"
+                        ? "bg-red-500 text-white shadow-md"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                     onClick={() => setEditModalTab("details")}
                   >
-                    Detail
+                    Detail Produk
                   </button>
                 </li>
                 <li>
                   <button
-                    className={`px-4 py-2 ${
+                    className={`px-6 py-3 font-medium rounded-t-lg transition-all duration-200 ${
                       editModalTab === "cover"
-                        ? "bg-red-500 text-white"
-                        : "bg-gray-200"
+                        ? "bg-red-500 text-white shadow-md"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                     onClick={() => setEditModalTab("cover")}
                   >
-                    Cover
+                    Gambar Cover
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className={`px-6 py-3 font-medium rounded-t-lg transition-all duration-200 ${
+                      editModalTab === "images"
+                        ? "bg-red-500 text-white shadow-md"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                    onClick={() => setEditModalTab("images")}
+                  >
+                    Gambar Produk
                   </button>
                 </li>
               </ul>
             </div>
 
             {editModalTab === "details" && (
-              <div>
-                {/* Bagian Form Detail Produk */}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium">
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Nama Produk
                   </label>
                   <input
@@ -585,15 +652,14 @@ const Produk = () => {
                     onChange={(e) =>
                       setEditProduct({ ...editProduct, name: e.target.value })
                     }
-                    className="w-full border rounded p-2"
+                    className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
                   />
                 </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Deskripsi Produk
                   </label>
-                  <input
-                    type="text"
+                  <textarea
                     value={editProduct.description}
                     onChange={(e) =>
                       setEditProduct({
@@ -601,45 +667,53 @@ const Produk = () => {
                         description: e.target.value,
                       })
                     }
-                    className="w-full border rounded p-2"
+                    className="w-full border border-gray-300 rounded-lg p-3 h-24 focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
                   />
                 </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium">Harga</label>
-                  <input
-                    type="number"
-                    value={editProduct.price}
-                    onChange={(e) =>
-                      setEditProduct({
-                        ...editProduct,
-                        price: parseFloat(e.target.value),
-                      })
-                    }
-                    className="w-full border rounded p-2"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Harga
+                    </label>
+                    <input
+                      type="number"
+                      value={editProduct.price}
+                      onChange={(e) =>
+                        setEditProduct({
+                          ...editProduct,
+                          price: parseFloat(e.target.value),
+                        })
+                      }
+                      className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Stok
+                    </label>
+                    <input
+                      type="number"
+                      value={editProduct.stock}
+                      onChange={(e) =>
+                        setEditProduct({
+                          ...editProduct,
+                          stock: parseInt(e.target.value),
+                        })
+                      }
+                      className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
+                    />
+                  </div>
                 </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium">Stok</label>
-                  <input
-                    type="number"
-                    value={editProduct.stock}
-                    onChange={(e) =>
-                      setEditProduct({
-                        ...editProduct,
-                        stock: parseInt(e.target.value),
-                      })
-                    }
-                    className="w-full border rounded p-2"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium">Kategori</label>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Kategori
+                  </label>
                   <select
                     id="category"
                     value={selectedCategory}
                     onChange={handleCategoryChange}
                     required
-                    className="w-full border rounded p-2"
+                    className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
                   >
                     <option value="">Pilih Kategori</option>
                     {categories.map((category) => (
@@ -653,51 +727,88 @@ const Produk = () => {
             )}
 
             {editModalTab === "cover" && (
-              <div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium">
-                    Gambar Cover
+              <div className="space-y-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Gambar Cover
+                </label>
+
+                {editProduct.cover ? (
+                  <div className="space-y-4">
+                    <img
+                      src={normalizeUrl(editProduct.cover)}
+                      alt="Cover Produk"
+                      className="w-full h-64 object-cover rounded-lg shadow-md"
+                    />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleUpdateCover(e.target.files[0])}
+                      className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100"
+                    />
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                    <p className="text-gray-500">Belum ada gambar cover</p>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleUpdateCover(e.target.files[0])}
+                      className="w-full mt-4 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {editModalTab === "images" && (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center mb-4">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Gambar Produk ({productImages.length}/5)
                   </label>
-
-                  {/* Pastikan bagian ini dijalankan */}
-
-                  {editProduct.cover ? (
-                    <>
-                      {/* Log URL cover yang sedang ditampilkan */}
-
-                      {/* Gunakan normalizeUrl untuk memperbaiki URL cover */}
-                      <img
-                        src={normalizeUrl(editProduct.cover)} // Normalisasi URL sebelum menampilkan gambar
-                        alt="Cover Produk"
-                        className="w-full h-40 object-cover mb-2"
-                      />
-                    </>
-                  ) : (
-                    <p className="text-sm text-gray-500">Tidak ada cover</p>
+                  {productImages.length < 5 && (
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => handleUploadImages(e.target.files)}
+                      className="w-48 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100"
+                    />
                   )}
+                </div>
 
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleUpdateCover(e.target.files[0])}
-                    className="mt-2"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  {productImages.map((image) => (
+                    <div key={image.id} className="relative group">
+                      <img
+                        src={normalizeUrl(image.url)}
+                        alt="Gambar Produk"
+                        className="w-full h-40 object-cover rounded-lg"
+                      />
+                      <button
+                        onClick={() => handleDeleteImage(image.id)}
+                        className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      >
+                        <FontAwesomeIcon icon={faTrash} className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
 
-            <div className="flex justify-end gap-2 mt-4">
+            <div className="flex justify-end gap-3 mt-8">
               <button
-                className="px-4 py-2 bg-gray-200 rounded"
+                className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition duration-200 font-medium"
                 onClick={closeEditModal}
               >
                 Batal
               </button>
               <button
-                className="px-4 py-2 bg-red-500 text-white rounded"
+                className="px-6 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-200 font-medium"
                 onClick={() => handleEditProduct(editProduct)}
               >
-                Simpan
+                Simpan Perubahan
               </button>
             </div>
           </div>

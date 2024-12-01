@@ -60,7 +60,7 @@ function Header() {
             onMouseEnter={() => setIsDropdownOpen(true)}
           >
             <button
-              className=" text-gray-800 font-semibold py-1 px-3 rounded-full hover:bg-gray-300 transition-colors focus:outline-none"
+              className="text-gray-800 font-semibold py-1 px-3 rounded-full hover:bg-gray-300 transition-colors focus:outline-none"
             >
               <FontAwesomeIcon icon={faUser} className="mr-2" />
             </button>

@@ -19,6 +19,7 @@ const ProfilePopup = ({ onUpdateAddress, onUpdateShop, onClose }) => {
     username: "",
   });
   const [addressId, setAddressId] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const { token } = useContext(AuthContext);
@@ -51,8 +52,8 @@ const ProfilePopup = ({ onUpdateAddress, onUpdateShop, onClose }) => {
       toast.success('Address successfully saved!');
       onUpdateAddress(response.data.address);
   
-      // Setelah alamat berhasil disimpan, lanjutkan ke tab 3 (form untuk data toko)
-      setStep(3); // Ganti ke tab 3
+      // Lanjut ke step berikutnya (form toko)
+      setStep(4); // Karena sekarang form toko ada di step 4
     } catch (error) {
       console.error('Error saving address:', error);
       toast.error('Failed to save address. Please try again.');
@@ -68,6 +69,11 @@ const ProfilePopup = ({ onUpdateAddress, onUpdateShop, onClose }) => {
         description: shopData.description,
         addressId,
         username: shopData.username,
+        province: formData.province,
+        city: formData.city,
+        district: formData.district,
+        subdistrict: formData.subdistrict,
+        postalCode: formData.postalCode
       };
   
       const response = await axios.post(`${apiUrl}/shop/create`, payload, { headers });
@@ -75,16 +81,76 @@ const ProfilePopup = ({ onUpdateAddress, onUpdateShop, onClose }) => {
       toast.success('Shop data successfully saved!');
       onUpdateShop(response.data.shop);
   
-      // Beralih ke tab 4 setelah berhasil menyimpan data toko
-      setStep(4);  // Beralih ke tab 4 (konfirmasi selesai)
+      // Ubah dari setStep(4) menjadi setStep(5)
+      setStep(5);  // Beralih ke halaman konfirmasi selesai
     } catch (error) {
       console.error('Error saving shop data:', error);
       toast.error('Failed to save shop data. Please try again.');
     }
   };
+  
 
   const handleNext = () => {
     setStep(step + 1);
+  };
+
+  // const handleSkip = () => {
+  //   setStep(step + 1); // Skip to the next step
+  // };
+
+  // const togglePopup = () => {
+  //   onClose(); // Close the popup
+  // };
+
+  const handleImageUpload = async () => {
+    if (!selectedImage) {
+      handleNext(); // Skip jika tidak ada gambar yang dipilih
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('image', selectedImage);
+
+      const headers = { 
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data'
+      };
+
+      await axios.post(`${apiUrl}/user/image`, formData, { headers });
+      toast.success('Profile picture uploaded successfully!');
+      handleNext();
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Failed to upload profile picture. Please try again.');
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 3 * 1024 * 1024) { // 3MB dalam bytes
+        toast.error('Image size must be less than 3MB');
+        return;
+      }
+      setSelectedImage(file);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      if (file.size > 3 * 1024 * 1024) {
+        toast.error('Image size must be less than 3MB');
+        return;
+      }
+      setSelectedImage(file);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
   };
 
   return (
@@ -102,9 +168,54 @@ const ProfilePopup = ({ onUpdateAddress, onUpdateShop, onClose }) => {
             </button>
           </>
         )}
+
         {step === 2 && (
+          <>
+            <h2 className="text-2xl font-semibold mb-4 text-center">Wanna add profile picture?</h2>
+            <p className="mb-6 text-center text-gray-600">You can upload your profile picture here or add it later.</p>
+            <div 
+              className="border-dashed border-2 border-gray-300 p-6 mb-4 text-center cursor-pointer rounded-lg"
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onClick={() => document.getElementById('imageInput').click()}
+            >
+              {selectedImage ? (
+                <p className="text-gray-700">{selectedImage.name}</p>
+              ) : (
+                <>
+                  <p className="text-gray-700">Drag and drop or select image to upload</p>
+                  <p className="text-sm text-gray-500">( Maximum 3mb. )</p>
+                </>
+              )}
+              <input
+                id="imageInput"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </div>
+            <div className="flex justify-between gap-4">
+              <button
+                onClick={handleNext}
+                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors w-1/2"
+              >
+                Skip
+              </button>
+              <button
+                onClick={handleImageUpload}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors w-1/2"
+              >
+                Next
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === 3 && (
           <form onSubmit={handleAddressSubmit}>
             <h2 className="text-2xl font-semibold mb-4 text-center">Tell us about your address</h2>
+            <p className="mb-6 text-center text-gray-600">Please complete your address information to access the website.</p>
             {["name", "province", "city", "district", "subdistrict", "postalCode"].map((field) => (
               <div key={field} className="mb-4">
                 <label className="block mb-2 capitalize text-gray-700">{field}</label>
@@ -126,12 +237,15 @@ const ProfilePopup = ({ onUpdateAddress, onUpdateShop, onClose }) => {
             </button>
           </form>
         )}
-        {step === 3 && (
+
+        {step === 4 && (
           <form onSubmit={handleShopSubmit}>
             <h2 className="text-2xl font-semibold mb-4 text-center">Complete Your Shop Information</h2>
             {["shopName", "description", "username"].map((field) => (
               <div key={field} className="mb-4">
-                <label className="block mb-2 capitalize text-gray-700">{field === "shopName" ? "Name" : field}</label>
+                <label className="block mb-2 capitalize text-gray-700">
+                  {field === "shopName" ? "Name" : field}
+                </label>
                 <input
                   type="text"
                   name={field}
@@ -150,7 +264,8 @@ const ProfilePopup = ({ onUpdateAddress, onUpdateShop, onClose }) => {
             </button>
           </form>
         )}
-        {step === 4 && (
+
+        {step === 5 && (
           <>
             <h2 className="text-2xl font-semibold mb-4 text-center">Profile setup completed!</h2>
             <p className="mb-6 text-center text-gray-600">You can now browse the website and shop freely.</p>

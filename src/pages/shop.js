@@ -206,14 +206,11 @@ const Shop = () => {
                       <h3 className="text-lg font-bold text-gray-800">
                         {product.name}
                       </h3>
-                      <p className="text-gray-600 text-sm">
+                      {/* <p className="text-gray-600 text-sm">
                         {product.description}
-                      </p>
+                      </p> */}
                       <p className="text-red-500 font-semibold">
-                        Price: Rp. {product.price}
-                      </p>
-                      <p className="text-gray-700 text-sm">
-                        Stock: {product.stock}
+                       Rp. {product.price}
                       </p>
                     </div>
                   </div>

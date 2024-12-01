@@ -1,5 +1,5 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React, { useState, useEffect, createContext, useContext, useCallback } from 'react';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Header from '../../components/section/header';
 import Sidebar from '../../components/dashboardseller/sidebar';
@@ -9,6 +9,7 @@ import Produk from './produk';
 import DataToko from './datatoko';
 import Pesanan from './pesanan';
 import Keuangan from './keuangan';
+import ProfileSeller from './profile';
 import { AuthContext } from '../../components/context/AuthContext';
 import ProfilePopup from '../../components/landing/ProfilePopup';
 
@@ -20,10 +21,23 @@ const DashboardSeller = () => {
   const [userData, setUserData] = useState(null);
   const [addressData, setAddressData] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(true);
-  const [isPopupVisible, setPopupVisible] = useState(false);
+  const [isPopupVisible, setPopupVisible] = useState(true); // State untuk kontrol popup
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   const { token } = useContext(AuthContext);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const cdnUrl = process.env.REACT_APP_CDN_BASE_URL;
+
+  // Ubah normalizeUrl menjadi useCallback
+  const normalizeUrl = useCallback((url) => {
+    if (!url) return null;
+    const cleanedPath = url
+      .replace(/^.*localhost:\d+\//, "/")
+      .replace(/\\/g, "/");
+    return `${cdnUrl}/${cleanedPath}`
+      .replace(/\/\//g, "/")
+      .replace(":/", "://");
+  }, [cdnUrl]); // cdnUrl sebagai dependency
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,40 +50,50 @@ const DashboardSeller = () => {
           axios.get(`${apiUrl}/user/address`, { headers }),
         ]);
 
-        setShopData(shopResponse.data.shop || null);
+        console.log('Shop Response:', shopResponse.data);
+
+        setShopData({
+          ...shopResponse.data.shop,
+          shopImage: normalizeUrl(shopResponse.data.shopImage),
+          shopBanner: normalizeUrl(shopResponse.data.shopBanner)
+        });
+        
         setUserData(userResponse.data.user || null);
         setAddressData(addressResponse.data.address || null);
 
-        if (!shopResponse.data.shop || !addressResponse.data.address) {
-          setPopupVisible(true);
-        }
+        // Setelah data selesai dimuat, set initialLoadComplete
+        setInitialLoadComplete(true);
       } catch (error) {
         console.error('Error fetching data:', error);
+        setInitialLoadComplete(true); // Tetap set true meski error
       }
     };
 
     if (token) fetchData();
-  }, [apiUrl, token]);
+  }, [apiUrl, token, cdnUrl, normalizeUrl]); // Tambahkan normalizeUrl ke dependency array
 
   const updateAddressData = (newAddress) => {
     setAddressData(newAddress);
-    if (shopData && newAddress) {
-      setPopupVisible(false);
-    }
   };
 
   const updateShopData = (newShopData) => {
     setShopData(newShopData);
-    if (newShopData && addressData) {
-      setPopupVisible(false);
-    }
   };
 
+  // Cek apakah data address atau shop belum lengkap
+  const isProfileIncomplete = !addressData || !shopData;
+
+  // Fungsi untuk menutup popup
+  const navigate = useNavigate();
   const handleClosePopup = () => {
     setPopupVisible(false);
+    navigate(0); // Akan merefresh halaman current route
   };
 
   const toggleSidebar = () => setIsCollapsed((prev) => !prev);
+
+  // Modifikasi logika pengecekan untuk menampilkan popup
+  const shouldShowPopup = initialLoadComplete && isProfileIncomplete && isPopupVisible;
 
   return (
     <ShopContext.Provider value={shopData}>
@@ -82,8 +106,8 @@ const DashboardSeller = () => {
 
           {/* Main Content */}
           <div className="flex flex-1 overflow-hidden">
-            {/* Sidebar */}
-            <div
+             {/* Sidebar */}
+             <div
               className={`bg-white shadow-md transition-all duration-300 ${
                 isCollapsed ? 'w-16' : 'w-64'
               }`}
@@ -102,6 +126,7 @@ const DashboardSeller = () => {
                 <Route path="datatoko" element={<DataToko />} />
                 <Route path="pesanan" element={<Pesanan />} />
                 <Route path="keuangan" element={<Keuangan />} />
+                <Route path="profile" element={<ProfileSeller />} />
                 <Route path="/" element={<Navigate to="home" />} />
               </Routes>
             </div>
@@ -111,7 +136,7 @@ const DashboardSeller = () => {
           <Footer />
 
           {/* Profile Popup */}
-          {isPopupVisible && (
+          {shouldShowPopup && (
             <ProfilePopup
               onUpdateAddress={updateAddressData}
               onUpdateShop={updateShopData}

@@ -4,17 +4,18 @@ import Modal from 'react-modal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faPencilAlt, faTrash } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
+import { AuthContext } from '../../components/context/AuthContext';
 import { toast } from 'react-hot-toast';
-import { AuthContext } from '../../components/context/AuthContext'; // Tambahkan impor ini
 
 Modal.setAppElement('#root');
 
 const DataToko = () => {
   const shopData = useContext(ShopContext);  // Ambil data dari ShopContext
   const { addressData } = useContext(UserContext);  // Ambil data dari UserContext
-  const { token } = useContext(AuthContext); // Dapatkan token dari AuthContext
-  const apiUrl = process.env.REACT_APP_API_BASE_URL; // Dapatkan apiUrl dari variabel lingkungan
-  const cdnUrl = process.env.REACT_APP_CDN_URL; // Definisikan cdnUrl dengan variabel lingkungan yang sesuai
+  const { token } = useContext(AuthContext);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isUploadingBanner, setIsUploadingBanner] = useState(false);
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
   const [activeTab, setActiveTab] = useState('Informasi');
   const [catatan, setCatatan] = useState([]);
@@ -30,7 +31,11 @@ const DataToko = () => {
     kodePos: '',
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [shopDataState, setShopData] = useState(shopData); // Gunakan useState untuk shopData
+  const [previewImage, setPreviewImage] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [uploadType, setUploadType] = useState(null); // 'logo' atau 'banner'
+  const [shopDataState, setShopData] = useState(shopData);
 
   useEffect(() => {
     if (addressData && addressData.length > 0) {
@@ -60,50 +65,120 @@ const DataToko = () => {
     setIsEditing(!isEditing);
   };
 
+  const tambahCatatan = () => {
+    if (judulCatatan.trim() && isiCatatan.trim()) {
+      const newCatatan = {
+        judul: judulCatatan,
+        isi: isiCatatan,
+        tanggal: new Date().toLocaleDateString('id-ID', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        }),
+      };
+      setCatatan([...catatan, newCatatan]);
+      setJudulCatatan('');
+      setIsiCatatan('');
+      setIsModalOpen(false);
+    }
+  };
+
+  // Fungsi untuk menangani preview file
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      setPreviewImage(URL.createObjectURL(file));
+      setIsPreviewModalOpen(true);
+    }
+  };
+
+  // Fungsi untuk menyimpan perubahan
+  const handleSaveImage = async () => {
+    if (!selectedFile) return;
+
+    const toastId = toast.loading(`Mengunggah ${uploadType === 'logo' ? 'logo' : 'banner'} toko...`);
+    const formData = new FormData();
+    
+    if (uploadType === 'logo') {
+      formData.append('image', selectedFile);
+    } else {
+      formData.append('banner', selectedFile);
+    }
+
+    try {
+      const method = uploadType === 'logo' ? 
+        (shopData?.shopImage ? 'PUT' : 'POST') : 
+        (shopData?.shopBanner ? 'PUT' : 'POST');
+      
+      const endpoint = `${apiUrl}/shop/${uploadType === 'logo' ? 'logo' : 'banner'}`;
+      
+      await axios({
+        method,
+        url: endpoint,
+        data: formData,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      toast.success(`${uploadType === 'logo' ? 'Logo' : 'Banner'} toko berhasil diperbarui!`, { id: toastId });
+      setIsPreviewModalOpen(false);
+      setPreviewImage(null);
+      setSelectedFile(null);
+      window.location.reload();
+    } catch (error) {
+      toast.error(`Gagal mengupload: ${error.response?.data?.message || error.message}`, { id: toastId });
+    }
+  };
+
+  // Fungsi untuk menghapus logo
+  const handleDeleteLogo = async () => {
+    const toastId = toast.loading("Menghapus logo toko...");
+    try {
+      await axios.delete(`${apiUrl}/shop/logo`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      toast.success("Logo toko berhasil dihapus!", { id: toastId });
+      window.location.reload();
+    } catch (error) {
+      console.error('Error deleting logo:', error);
+      toast.error(`Gagal menghapus logo toko: ${error.response?.data?.message || error.message}`, { id: toastId });
+    }
+  };
+
+  // Fungsi untuk menghapus banner
+  const handleDeleteBanner = async () => {
+    const toastId = toast.loading("Menghapus banner toko...");
+    try {
+      await axios.delete(`${apiUrl}/shop/banner`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      toast.success("Banner toko berhasil dihapus!", { id: toastId });
+      window.location.reload();
+    } catch (error) {
+      console.error('Error deleting banner:', error);
+      toast.error(`Gagal menghapus banner toko: ${error.response?.data?.message || error.message}`, { id: toastId });
+    }
+  };
+
+  // Tambahkan fungsi untuk menyimpan perubahan
   const saveChanges = async () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
       const payload = {
         name: shopDataState.name,
         description: shopDataState.description,
-        // Tambahkan data lain yang ingin disimpan
       };
 
       const response = await axios.put(`${apiUrl}/shop/update`, payload, { headers });
-      setShopData(response.data.shop); // Perbarui state dengan data terbaru
+      setShopData(response.data.shop);
       toast.success('Data toko berhasil disimpan!');
       setIsEditing(false);
     } catch (error) {
       console.error('Error saving shop data:', error);
       toast.error('Gagal menyimpan data toko. Silakan coba lagi.');
-    }
-  };
-
-  // Fungsi untuk memastikan gambar dapat diakses
-  const getImageUrl = (imagePath) => {
-    if (imagePath && imagePath.startsWith('http')) {
-      return imagePath;
-    }
-    // Jika tidak ada URL lengkap, tambahkan domain atau base URL
-    return `${cdnUrl}${imagePath}`;  // Sesuaikan dengan domain backend Anda
-  };
-
-  const tambahCatatan = async () => {
-    try {
-      const headers = { Authorization: `Bearer ${token}` };
-      const payload = {
-        title: judulCatatan,
-        content: isiCatatan,
-        // Tambahkan data lain yang diperlukan
-      };
-
-      await axios.post(`${apiUrl}/shop/notes`, payload, { headers });
-      toast.success('Catatan berhasil ditambahkan!');
-      setIsModalOpen(false);
-      // Tambahkan logika untuk memperbarui state catatan jika diperlukan
-    } catch (error) {
-      console.error('Error adding note:', error);
-      toast.error('Gagal menambahkan catatan. Silakan coba lagi.');
     }
   };
 
@@ -160,41 +235,143 @@ const DataToko = () => {
               </div>
               <div className="flex justify-end">
                 {isEditing ? (
-                  <button onClick={saveChanges} className="mt-4 p-2 bg-blue-500 text-white rounded">Simpan</button>
+                  <button onClick={saveChanges} className="mt-4 p-2 bg-blue-500 text-white rounded">
+                    Simpan
+                  </button>
                 ) : (
-                  <button onClick={toggleEdit} className="mt-4 p-2 bg-red-500 text-white rounded">Ubah</button>
+                  <button onClick={toggleEdit} className="mt-4 p-2 bg-red-500 text-white rounded">
+                    Ubah
+                  </button>
                 )}
               </div>
             </div>
             <hr className="my-6 border-gray-300" />
             
-            {/* Gambar Banner Toko */}
-            <div className="gambar-banner mb-6">
-              <h2 className="text-lg font-semibold mb-4">Banner Toko</h2>
-              <div className="flex items-center">
-                <img
-                  src={getImageUrl(shopDataState?.shopBanner)}
-                  alt="Banner Toko"
-                  className="w-full h-48 object-cover rounded mb-4"
-                />
+            {/* Section Banner dan Logo */}
+            <div className="shop-images mb-8">
+              <h2 className="text-lg font-semibold mb-4">Preview Toko</h2>
+              {/* Banner Section */}
+              <div className="banner-section relative h-48 mb-6 group">
+                {shopData?.shopBanner ? (
+                  <img
+                    src={shopData.shopBanner}
+                    alt="Banner Toko"
+                    className="w-full h-full object-cover rounded-lg shadow-md"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
+                    <p className="text-gray-500">Belum ada banner toko</p>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center space-x-4">
+                  <label className="cursor-pointer px-4 py-2 bg-white text-gray-800 rounded-md hover:bg-gray-100 transition">
+                    Upload Banner
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={(e) => {
+                        setUploadType('banner');
+                        handleFileSelect(e);
+                      }}
+                    />
+                  </label>
+                  {shopData?.shopBanner && (
+                    <button
+                      onClick={handleDeleteBanner}
+                      className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+                    >
+                      Hapus Banner
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
 
-            {/* Gambar Toko */}
-            <div className="gambar-toko mb-6">
-              <h2 className="text-lg font-semibold mb-4">Gambar Toko</h2>
-              <div className="flex items-center">
-                <img
-                  src={getImageUrl(shopDataState?.shopImage)}
-                  alt="Gambar Toko"
-                  className="w-48 h-48 object-cover mr-4"
-                />
+              {/* Logo Section */}
+              <div className="logo-section flex items-center space-x-4 shadow-md">
+                <div className="relative w-32 h-32 group">
+                  {shopData?.shopImage ? (
+                    <img
+                      src={shopData.shopImage}
+                      alt="Logo Toko"
+                      className="w-full h-full object-cover rounded-full shadow-md"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
+                      <p className="text-gray-500">No Logo</p>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-full flex flex-col items-center justify-center space-y-2">
+                    <label className="cursor-pointer px-3 py-1 bg-white text-gray-800 rounded-md hover:bg-gray-100 transition text-sm">
+                      Upload Logo
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => {
+                          setUploadType('logo');
+                          handleFileSelect(e);
+                        }}
+                      />
+                    </label>
+                    {shopData?.shopImage && (
+                      <button
+                        onClick={handleDeleteLogo}
+                        className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition text-sm"
+                      >
+                        Hapus Logo
+                      </button>
+                    )}
+                  </div>
+                </div>
                 <div>
-                  <p className="mb-2">Ukuran Foto Harus 300x300</p>
-                  <button className="p-2 bg-white border border-gray-300 rounded">Upload</button>
+                  <h1 className="text-2xl font-bold text-gray-800">{shopData?.name}</h1>
+                  <p className="text-gray-600">{shopData?.description}</p>
                 </div>
               </div>
             </div>
+
+            {/* Modal Preview */}
+            {isPreviewModalOpen && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                <div className="bg-white w-[500px] p-6 rounded-xl shadow-2xl">
+                  <h3 className="text-xl font-semibold mb-4">
+                    Preview {uploadType === 'logo' ? 'Logo' : 'Banner'} Toko
+                  </h3>
+                  
+                  <div className={`mb-4 ${uploadType === 'logo' ? 'w-32 h-32 mx-auto' : 'w-full h-48'}`}>
+                    <img
+                      src={previewImage}
+                      alt="Preview"
+                      className={`${
+                        uploadType === 'logo' 
+                          ? 'w-full h-full object-cover rounded-full' 
+                          : 'w-full h-full object-cover rounded-lg'
+                      }`}
+                    />
+                  </div>
+
+                  <div className="flex justify-end space-x-3">
+                    <button
+                      onClick={() => {
+                        setIsPreviewModalOpen(false);
+                        setPreviewImage(null);
+                        setSelectedFile(null);
+                      }}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      onClick={handleSaveImage}
+                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                    >
+                      Simpan
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
 
