@@ -1,15 +1,18 @@
 import React, { useContext, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch, faUser } from "@fortawesome/free-solid-svg-icons";
 import { AuthContext } from "../context/AuthContext";
+import { UserContext } from "../../pages/dashboardseller/dashboardseller";
 import { useNavigate } from "react-router-dom";
 import DropdownMenu from "../landing/nav-dropdown";
+import { MagnifyingGlassIcon, UserIcon, ShoppingCartIcon, EnvelopeIcon, BellIcon } from '@heroicons/react/24/outline';
 
 function Header() {
-  const { isAuthenticated, user, logout } = useContext(AuthContext);
+  const { isAuthenticated, logout } = useContext(AuthContext);
+  const userContext = useContext(UserContext);
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const userData = userContext ? userContext.userData : null;
 
   const handleLoginRedirect = () => navigate("/login");
   const handleProfileRedirect = () => navigate("/buyerprofile");
@@ -39,7 +42,7 @@ function Header() {
       {/* Search Bar */}
       <div className="flex items-center flex-grow mx-4 max-w-full md:max-w-md border border-gray-300 rounded-full bg-white">
         <button type="button" onClick={handleSearchSubmit} className="p-2 pl-4">
-          <FontAwesomeIcon icon={faSearch} className="text-gray-600" />
+          <MagnifyingGlassIcon className="w-5 h-5 text-gray-600" />
         </button>
         <div className="border-l border-gray-300 h-6 mx-2"></div>
         <input
@@ -52,35 +55,50 @@ function Header() {
         />
       </div>
 
-      {/* User Section with Dropdown */}
-      <div className="user-section flex items-center relative">
-        {isAuthenticated ? (
-          <div
-            className="relative"
-            onMouseEnter={() => setIsDropdownOpen(true)}
-          >
-            <button
-              className="text-gray-800 font-semibold py-1 px-3 rounded-full hover:bg-gray-300 transition-colors focus:outline-none"
+      {/* Icons Section */}
+      <div className="flex items-center space-x-6">
+        <button className="text-gray-800 hover:text-gray-600 transition-colors">
+          <ShoppingCartIcon className="w-5 h-5" />
+        </button>
+        <button className="text-gray-800 hover:text-gray-600 transition-colors">
+          <EnvelopeIcon className="w-5 h-5" />
+        </button>
+        <button className="text-gray-800 hover:text-gray-600 transition-colors">
+          <BellIcon className="w-5 h-5" />
+        </button>
+        <div className="border-l border-gray-600 h-8 mx-2"></div>
+        
+        {/* User Section with Dropdown */}
+        <div className="user-section flex items-center relative">
+          {isAuthenticated ? (
+            <div
+              className="relative "
+              onMouseEnter={() => setIsDropdownOpen(true)}
             >
-              <FontAwesomeIcon icon={faUser} className="mr-2" />
+              <button
+                className="text-gray-800 font-semibold py-1 px-3 rounded-full transition-colors focus:outline-none"
+              >
+                <UserIcon className="w-5 h-5" />
+              </button>
+              <span className="ml-2 text-gray-800">{userData?.name}</span>
+              {isDropdownOpen && (
+                <DropdownMenu
+                  role={userData?.role}
+                  onProfileClick={handleProfileRedirect}
+                  onDashboardClick={handleDashboardRedirect}
+                  onLogoutClick={handleLogout}
+                />
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={handleLoginRedirect}
+              className="border border-gray-800 text-gray-800 font-semibold py-1 px-3 rounded hover:bg-gray-300 transition-colors focus:outline-none"
+            >
+              Masuk
             </button>
-            {isDropdownOpen && (
-              <DropdownMenu
-                role={user?.role}
-                onProfileClick={handleProfileRedirect}
-                onDashboardClick={handleDashboardRedirect}
-                onLogoutClick={handleLogout}
-              />
-            )}
-          </div>
-        ) : (
-          <button
-            onClick={handleLoginRedirect}
-            className="border border-gray-800 text-gray-800 font-semibold py-1 px-3 rounded hover:bg-gray-300 transition-colors focus:outline-none"
-          >
-            Masuk
-          </button>
-        )}
+          )}
+        </div>
       </div>
     </header>
   );

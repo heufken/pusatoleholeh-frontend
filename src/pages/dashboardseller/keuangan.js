@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDownload, faChartLine, faMoneyBillWave, faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { ArrowDownTrayIcon, ChartBarIcon, CurrencyDollarIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 import Modal from 'react-modal';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, LineElement, BarElement, PointElement, LinearScale, Title, Tooltip, Legend, CategoryScale } from 'chart.js';
@@ -92,27 +91,27 @@ const Keuangan = () => {
       <h1 className="text-2xl font-bold mb-6">Halaman Keuangan</h1>
 
       {/* Ringkasan Saldo */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold">Total Saldo</h2>
             <p className="text-2xl font-bold">Rp 10.000.000</p>
           </div>
-          <FontAwesomeIcon icon={faMoneyBillWave} className="text-green-500" />
+          <CurrencyDollarIcon className="w-6 h-6 text-green-500" />
         </div>
         <div className="bg-white p-4 rounded-lg shadow flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold">Pesanan Berhasil</h2>
             <p className="text-2xl font-bold">150</p>
           </div>
-          <FontAwesomeIcon icon={faChartLine} className="text-blue-500" />
+          <ChartBarIcon className="w-6 h-6 text-blue-500" />
         </div>
         <div className="bg-white p-4 rounded-lg shadow flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold">Pendapatan Bulan Ini</h2>
             <p className="text-2xl font-bold">Rp 5.000.000</p>
           </div>
-          <FontAwesomeIcon icon={faChartLine} className="text-purple-500" />
+          <ChartBarIcon className="w-6 h-6 text-purple-500" />
         </div>
       </div>
 
@@ -120,7 +119,7 @@ const Keuangan = () => {
       <div className="bg-white shadow rounded-lg border border-gray-300 mb-6">
         <div className="p-4 border-b border-gray-300 flex justify-between items-center">
           <div className="flex items-center">
-            <div className="flex items-center border rounded-lg p-2 w-1/3">
+            <div className="flex items-center border rounded-lg p-2 w-full md:w-1/3">
               <input
                 type="text"
                 placeholder="Cari Deskripsi Transaksi"
@@ -130,12 +129,12 @@ const Keuangan = () => {
             <div className="relative ml-4">
               <button className="flex items-center border rounded-lg p-2">
                 <span className="mr-2">Filter Jenis</span>
-                <FontAwesomeIcon icon={faChevronDown} className="text-gray-500" />
+                <ChevronDownIcon className="w-5 h-5 text-gray-500" />
               </button>
             </div>
           </div>
           <button className="flex items-center p-2 bg-blue-500 text-white rounded">
-            <FontAwesomeIcon icon={faDownload} className="mr-2" />
+            <ArrowDownTrayIcon className="w-5 h-5 mr-2" />
             Unduh Laporan
           </button>
         </div>
