@@ -537,7 +537,7 @@ const Produk = () => {
                         }`}
                       ></div>
                       <div
-                        className={`dot absolute w-6 h-6 bg-white border-2 border-gray-300 rounded-full shadow transition-transform duration-300 ${
+                        className={`dot absolute w-5 h-5 bg-white border-2 border-gray-300 rounded-full shadow transition-transform duration-300 ${
                           product.isActive
                             ? "transform translate-x-full border-green-500"
                             : ""

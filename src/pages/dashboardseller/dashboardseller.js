@@ -21,14 +21,13 @@ const DashboardSeller = () => {
   const [userData, setUserData] = useState(null);
   const [addressData, setAddressData] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(true);
-  const [isPopupVisible, setPopupVisible] = useState(true); // State untuk kontrol popup
+  const [isPopupVisible, setPopupVisible] = useState(true);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   const { token } = useContext(AuthContext);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const cdnUrl = process.env.REACT_APP_CDN_BASE_URL;
 
-  // Ubah normalizeUrl menjadi useCallback
   const normalizeUrl = useCallback((url) => {
     if (!url) return null;
     const cleanedPath = url
@@ -37,7 +36,7 @@ const DashboardSeller = () => {
     return `${cdnUrl}/${cleanedPath}`
       .replace(/\/\//g, "/")
       .replace(":/", "://");
-  }, [cdnUrl]); // cdnUrl sebagai dependency
+  }, [cdnUrl]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,8 +49,6 @@ const DashboardSeller = () => {
           axios.get(`${apiUrl}/user/address`, { headers }),
         ]);
 
-        console.log('Shop Response:', shopResponse.data);
-
         setShopData({
           ...shopResponse.data.shop,
           shopImage: normalizeUrl(shopResponse.data.shopImage),
@@ -60,17 +57,15 @@ const DashboardSeller = () => {
         
         setUserData(userResponse.data.user || null);
         setAddressData(addressResponse.data.address || null);
-
-        // Setelah data selesai dimuat, set initialLoadComplete
         setInitialLoadComplete(true);
       } catch (error) {
         console.error('Error fetching data:', error);
-        setInitialLoadComplete(true); // Tetap set true meski error
+        setInitialLoadComplete(true);
       }
     };
 
     if (token) fetchData();
-  }, [apiUrl, token, cdnUrl, normalizeUrl]); // Tambahkan normalizeUrl ke dependency array
+  }, [apiUrl, token, cdnUrl, normalizeUrl]);
 
   const updateAddressData = (newAddress) => {
     setAddressData(newAddress);
@@ -80,25 +75,22 @@ const DashboardSeller = () => {
     setShopData(newShopData);
   };
 
-  // Cek apakah data address atau shop belum lengkap
   const isProfileIncomplete = !addressData || !shopData;
 
-  // Fungsi untuk menutup popup
   const navigate = useNavigate();
   const handleClosePopup = () => {
     setPopupVisible(false);
-    navigate(0); // Akan merefresh halaman current route
+    navigate(0);
   };
 
   const toggleSidebar = () => setIsCollapsed((prev) => !prev);
 
-  // Modifikasi logika pengecekan untuk menampilkan popup
   const shouldShowPopup = initialLoadComplete && isProfileIncomplete && isPopupVisible;
 
   return (
     <ShopContext.Provider value={shopData}>
       <UserContext.Provider value={{ userData, addressData }}>
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen bg-gradient-to-b from-red-200 via-red-50 to-gray-200">
           {/* Header */}
           <div className="sticky top-0 z-10">
             <Header toggleSidebar={toggleSidebar} />
@@ -106,11 +98,9 @@ const DashboardSeller = () => {
 
           {/* Main Content */}
           <div className="flex flex-1 overflow-hidden">
-             {/* Sidebar */}
-             <div
-              className={`bg-white shadow-md transition-all duration-300 ${
-                isCollapsed ? 'w-16' : 'w-64'
-              }`}
+            {/* Sidebar */}
+            <div
+              className={`bg-white shadow-md transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'}`}
             >
               <Sidebar
                 isCollapsed={isCollapsed}
@@ -119,7 +109,7 @@ const DashboardSeller = () => {
             </div>
 
             {/* Content Area */}
-            <div className="flex-grow bg-gradient-to-b from-red-200 via-red-50 to-gray-200 p-6 overflow-auto">
+            <div className="flex-grow p-6 pr-4 overflow-auto">
               <Routes>
                 <Route path="home" element={<Home />} />
                 <Route path="produk" element={<Produk />} />

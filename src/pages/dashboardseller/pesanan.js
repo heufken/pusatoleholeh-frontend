@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faChevronDown, faEye, faPrint } from '@fortawesome/free-solid-svg-icons';
+import { MagnifyingGlassIcon, ChevronDownIcon, EyeIcon, PrinterIcon } from '@heroicons/react/24/solid';
 
 const Pesanan = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -14,14 +13,14 @@ const Pesanan = () => {
       <h1 className="text-2xl font-bold mb-6">Halaman Pesanan</h1>
 
       {/* Ringkasan Pesanan */}
-      <div className="grid grid-cols-5 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
         {['Baru', 'Diproses', 'Dikirim', 'Selesai', 'Dibatalkan'].map((status, index) => (
           <div key={index} className="bg-white p-4 rounded-lg shadow flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold">{status}</h2>
               <p className="text-2xl font-bold">0</p>
             </div>
-            <FontAwesomeIcon icon={faChevronDown} className="text-gray-500" />
+            <ChevronDownIcon className="w-5 h-5 text-gray-500" />
           </div>
         ))}
       </div>
@@ -30,8 +29,8 @@ const Pesanan = () => {
       <div className="bg-white shadow rounded-lg border border-gray-300">
         <div className="p-4 border-b border-gray-300 flex justify-between items-center">
           <div className="flex items-center">
-            <div className="flex items-center border rounded-lg p-2 w-1/3">
-              <FontAwesomeIcon icon={faSearch} className="text-gray-500" />
+            <div className="flex items-center border rounded-lg p-2 w-full md:w-1/3">
+              <MagnifyingGlassIcon className="w-5 h-5 text-gray-500" />
               <input
                 type="text"
                 placeholder="Cari Nomor Pesanan, Nama Pembeli, atau Produk"
@@ -44,7 +43,7 @@ const Pesanan = () => {
                 onClick={toggleDropdown}
               >
                 <span className="mr-2">Filter Status</span>
-                <FontAwesomeIcon icon={faChevronDown} className="text-gray-500" />
+                <ChevronDownIcon className="w-5 h-5 text-gray-500" />
               </button>
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-full bg-white border border-gray-300 rounded-lg shadow-lg z-10">
@@ -93,10 +92,10 @@ const Pesanan = () => {
                 </td>
                 <td className="p-4 text-center">
                   <button className="mr-2" title="Lihat Detail">
-                    <FontAwesomeIcon icon={faEye} className="text-gray-500" />
+                    <EyeIcon className="w-5 h-5 text-gray-500" />
                   </button>
                   <button title="Cetak Invoice">
-                    <FontAwesomeIcon icon={faPrint} className="text-gray-500" />
+                    <PrinterIcon className="w-5 h-5 text-gray-500" />
                   </button>
                 </td>
               </tr>

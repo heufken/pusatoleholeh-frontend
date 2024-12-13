@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faHome, faStore, faBox, faShoppingCart, faMoneyBill, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { UserIcon, HomeIcon, BuildingStorefrontIcon, CubeIcon, ShoppingCartIcon, CurrencyDollarIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
   const [showText, setShowText] = useState(!isCollapsed);
@@ -28,52 +27,51 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           className={navItemClass(false)}
           aria-label="Toggle Sidebar"
         >
-          <FontAwesomeIcon icon={isCollapsed ? faChevronRight : faChevronLeft} />
+          {isCollapsed ? <ChevronRightIcon className="w-5 h-5" /> : <ChevronLeftIcon className="w-5 h-5" />}
           {showText && <span>Sembunyikan Menu</span>}
         </button>
         <NavLink 
           to="/dashboard-seller/home" 
           className={({ isActive }) => navItemClass(isActive)}
         >
-          <FontAwesomeIcon icon={faHome} />
+          <HomeIcon className="w-5 h-5" />
           {showText && <span>Dashboard</span>}
         </NavLink>
         <NavLink 
           to="/dashboard-seller/profile" 
           className={({ isActive }) => navItemClass(isActive)}
         >
-          <FontAwesomeIcon icon={faUser} />
+          <UserIcon className="w-5 h-5" />
           {showText && <span>Data Pengguna</span>}
         </NavLink>
         <NavLink 
           to="/dashboard-seller/datatoko" 
           className={({ isActive }) => navItemClass(isActive)}
         >
-          <FontAwesomeIcon icon={faStore} />
+          <BuildingStorefrontIcon className="w-5 h-5" />
           {showText && <span>Data Toko</span>}
         </NavLink>
         <NavLink 
           to="/dashboard-seller/produk" 
           className={({ isActive }) => navItemClass(isActive)}
         >
-          <FontAwesomeIcon icon={faBox} />
+          <CubeIcon className="w-5 h-5" />
           {showText && <span>Produk</span>}
         </NavLink>
         <NavLink 
           to="/dashboard-seller/pesanan" 
           className={({ isActive }) => navItemClass(isActive)}
         >
-          <FontAwesomeIcon icon={faShoppingCart} />
+          <ShoppingCartIcon className="w-5 h-5" />
           {showText && <span>Pesanan</span>}
         </NavLink>
         <NavLink 
           to="/dashboard-seller/keuangan" 
           className={({ isActive }) => navItemClass(isActive)}
         >
-          <FontAwesomeIcon icon={faMoneyBill} />
+          <CurrencyDollarIcon className="w-5 h-5" />
           {showText && <span>Keuangan</span>}
         </NavLink>
-        
       </div>
     </aside>
   );
