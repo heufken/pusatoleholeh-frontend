@@ -15,7 +15,7 @@ function Header() {
   const userData = userContext ? userContext.userData : null;
 
   const handleLoginRedirect = () => navigate("/login");
-  const handleProfileRedirect = () => navigate("/buyerprofile");
+  const handleProfileRedirect = () => navigate("/user");
   const handleDashboardRedirect = () => navigate("/dashboardseller");
   const handleLogout = () => {
     logout();
@@ -34,7 +34,7 @@ function Header() {
       onMouseLeave={() => setIsDropdownOpen(false)}
     >
       {/* Logo Section */}
-      <div className="logo flex items-center">
+      <div  onClick={() => window.location.href = '/'} className="logo flex items-center cursor-pointer">
         <img src="/logo.png" alt="Pusat Oleh-Oleh" className="h-10 w-auto mr-2" />
         <span className="font-bold text-lg hidden md:block">Pusat Oleh-Oleh</span>
       </div>
@@ -58,13 +58,13 @@ function Header() {
       {/* Icons Section */}
       <div className="flex items-center space-x-6">
         <button className="text-gray-800 hover:text-gray-600 transition-colors">
-          <ShoppingCartIcon className="w-5 h-5" />
+          <BellIcon className="w-5 h-5" />
         </button>
         <button className="text-gray-800 hover:text-gray-600 transition-colors">
           <EnvelopeIcon className="w-5 h-5" />
         </button>
-        <button className="text-gray-800 hover:text-gray-600 transition-colors">
-          <BellIcon className="w-5 h-5" />
+        <button onClick={() => window.location.href = '/cart'} className="text-gray-800 hover:text-gray-600 transition-colors">
+          <ShoppingCartIcon className="w-5 h-5" />
         </button>
         <div className="border-l border-gray-600 h-8 mx-2"></div>
         
