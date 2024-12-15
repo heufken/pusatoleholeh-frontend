@@ -5,6 +5,7 @@ import { AuthContext } from '../components/context/AuthContext';
 import Header from '../components/section/header';
 import Footer from '../components/section/footer';
 import { useNavigate } from 'react-router-dom';
+import { ThreeDots } from "react-loader-spinner";
 
 const $apiUrl = process.env.REACT_APP_API_BASE_URL;
 
@@ -94,9 +95,10 @@ const Cart = () => {
           Authorization: `Bearer ${token}`
         }
       });
-      setCartItems(response.data);
+      setCartItems(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to fetch cart');
+      setCartItems([]);
     } finally {
       setLoading(false);
     }
@@ -153,7 +155,16 @@ const Cart = () => {
       <>
         <Header />
         <div className="container mx-auto p-4 min-h-screen flex items-center justify-center">
-          <div>Loading...</div>
+          <ThreeDots
+            height="80"
+            width="80"
+            radius="9"
+            color="#4338ca"
+            ariaLabel="three-dots-loading"
+            wrapperStyle={{}}
+            wrapperClassName=""
+            visible={true}
+          />
         </div>
         <Footer />
       </>
@@ -169,10 +180,29 @@ const Cart = () => {
         <h1 className="text-2xl font-bold mb-4">Shopping Cart</h1>
         
         {loading ? (
-          <div>Loading...</div>
-        ) : cartItems.length === 0 ? (
-          <p>Your cart is empty</p>
-        ) : (
+          <div className="flex justify-center items-center py-8">
+            <ThreeDots
+              height="80"
+              width="80"
+              radius="9"
+              color="#4338ca"
+              ariaLabel="three-dots-loading"
+              wrapperStyle={{}}
+              wrapperClassName=""
+              visible={true}
+            />
+          </div>
+        ) : Array.isArray(cartItems) && cartItems.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-xl text-gray-600 mb-4">Your cart is empty</p>
+            <button 
+              onClick={() => navigate('/')} 
+              className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Continue Shopping
+            </button>
+          </div>
+        ) : Array.isArray(cartItems) ? (
           <>
             <div className="space-y-4">
               {cartItems.map((item) => (
@@ -240,11 +270,14 @@ const Cart = () => {
               <button 
                 onClick={handleCheckout}
                 className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                disabled={cartItems.length === 0}
               >
                 Checkout
               </button>
             </div>
           </>
+        ) : (
+          <div>Something went wrong. Please try again later.</div>
         )}
       </div>
       <Footer />

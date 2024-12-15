@@ -9,6 +9,7 @@ import RelatedProduct from "../components/productdetail/relatedproduct";
 import ReviewsProduct from "../components/productdetail/reviewsproduct";
 import Footer from '../components/section/footer';
 import { ThreeDots } from "react-loader-spinner"; // Import spinner loader
+import Discuss from "../components/productdetail/discuss";
 
 const ProductDetail = () => {
   const { productId } = useParams(); 
@@ -110,6 +111,7 @@ const ProductDetail = () => {
         currentProductId={productData?._id}
       />
       <ReviewsProduct />
+      <Discuss />
       <Footer />
     </div>
   );

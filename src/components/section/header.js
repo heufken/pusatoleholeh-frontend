@@ -4,6 +4,7 @@ import { UserContext } from "../../pages/dashboardseller/dashboardseller";
 import { useNavigate } from "react-router-dom";
 import DropdownMenu from "../landing/nav-dropdown";
 import { MagnifyingGlassIcon, UserIcon, ShoppingCartIcon, EnvelopeIcon, BellIcon } from '@heroicons/react/24/outline';
+import useCartCount from "../useCartCount";
 
 function Header() {
   const { isAuthenticated, logout } = useContext(AuthContext);
@@ -11,6 +12,7 @@ function Header() {
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const cartCount = useCartCount();
 
   const userData = userContext ? userContext.userData : null;
 
@@ -63,8 +65,16 @@ function Header() {
         <button className="text-gray-800 hover:text-gray-600 transition-colors">
           <EnvelopeIcon className="w-5 h-5" />
         </button>
-        <button onClick={() => window.location.href = '/cart'} className="text-gray-800 hover:text-gray-600 transition-colors">
+        <button 
+          onClick={() => window.location.href = '/cart'} 
+          className="text-gray-800 hover:text-gray-600 transition-colors relative"
+        >
           <ShoppingCartIcon className="w-5 h-5" />
+          {cartCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-[#7C3AED] text-white text-[8px] font-bold px-1 py-0.5 rounded-full min-w-[14px] h-[14px] flex items-center justify-center">
+              {cartCount}
+            </span>
+          )}
         </button>
         <div className="border-l border-gray-600 h-8 mx-2"></div>
         

@@ -7,10 +7,12 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import { Pagination } from 'swiper/modules';
+import { useNavigate } from 'react-router-dom';
 
 function ProductSection({ productData, onAddToCart }) {
   const [quantity, setQuantity] = useState(1);
   const [liked, setLiked] = useState(false);
+  const navigate = useNavigate();
 
   const handleQuantityChange = (amount) => {
     const newQuantity = quantity + amount;
@@ -131,6 +133,29 @@ function ProductSection({ productData, onAddToCart }) {
             <FontAwesomeIcon icon={faComment} style={{ color: "#000000" }} className="text-2xl" />
             <FontAwesomeIcon icon={faShareSquare} style={{ color: "#000000" }} className="text-2xl" />
           </div>
+
+          {/* Shop Info */}
+          <div className="shop-info mb-4">
+            <div className="border border-gray-500 p-4 rounded">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                    <span className="text-xl">{productData.shopId.name.charAt(0)}</span>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="font-bold">{productData.shopId.name}</h3>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => navigate(`/shop/${productData.shopId._id}`)}
+                  className="px-4 py-2 border border-red-500 text-red-500 rounded hover:bg-red-500 hover:text-white transition-colors"
+                >
+                  Visit Store
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div className="product-info pt-4">
             <div className="border border-gray-500 p-4 mb-2 rounded">
               <div className="delivery-info flex items-center mb-2">

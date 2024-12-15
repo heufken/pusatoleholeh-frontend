@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 // import DropdownMenu from "./nav-dropdown";
 import { UserIcon, BellIcon, EnvelopeIcon, ShoppingCartIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import useCartCount from "../useCartCount";
 
 function Nav() {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ function Nav() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const dropdownRef = useRef(null);
   const timeoutRef = useRef(null);
+  const cartCount = useCartCount();
 
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
@@ -151,7 +153,11 @@ function Nav() {
                   className="p-2 text-gray-600 hover:text-[#4F46E5] hover:bg-gray-100 rounded-lg transition-all relative"
                 >
                   <ShoppingCartIcon className="h-6 w-6" />
-                  <span className="absolute -top-1 -right-1 bg-[#7C3AED] text-white text-xs font-bold px-2 py-0.5 rounded-full">2</span>
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-[#7C3AED] text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                      {cartCount}
+                    </span>
+                  )}
                 </button>
 
                 {isAuthenticated ? (
