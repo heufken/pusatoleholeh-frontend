@@ -11,6 +11,10 @@ import Search from "./pages/search";
 import ProductDetail from "./pages/productdetail";
 import Shop from "./pages/shop";
 import ProtectedRoute from "./components/protectedroute";
+import ArticlePage from "./pages/articlehomepage";
+import Article from "./pages/article";
+import CartPage from "./pages/CartPage";
+import './styles/custom.css';
 
 function App() {
   return (
@@ -25,6 +29,9 @@ function App() {
           <Route path="/search" element={<Search />} />
           <Route path="/shop/:shopName" element={<Shop />} />
           <Route path="/product/:productId" element={<ProductDetail />} />
+          <Route path="/articlehomepage" element={<ArticlePage />} />
+          <Route path="/article" element={<Article />} />
+          <Route path="/cart" element={<CartPage />} />
 
           {/* Rute terproteksi */}
           <Route element={<ProtectedRoute allowedRoles={["seller"]} />}>

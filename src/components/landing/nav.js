@@ -146,7 +146,7 @@ function Nav() {
                 <button className="p-2 text-gray-600 hover:text-[#4F46E5] hover:bg-gray-100 rounded-lg transition-all">
                   <EnvelopeIcon className="h-6 w-6" />
                 </button>
-                <button className="p-2 text-gray-600 hover:text-[#4F46E5] hover:bg-gray-100 rounded-lg transition-all relative">
+                <button onClick={() => navigate('/cart')} className="p-2 text-gray-600 hover:text-[#4F46E5] hover:bg-gray-100 rounded-lg transition-all relative">
                   <ShoppingCartIcon className="h-6 w-6" />
                   <span className="absolute -top-1 -right-1 bg-[#7C3AED] text-white text-xs font-bold px-2 py-0.5 rounded-full">2</span>
                 </button>
