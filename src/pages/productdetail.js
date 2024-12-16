@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useState, useContext } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { toast } from "react-hot-toast";
+import { AuthContext } from "../components/context/AuthContext";
 import Header from "../components/section/header";
 import ProductSection from "../components/productdetail/productsection";
 import RelatedProduct from "../components/productdetail/relatedproduct";
 import ReviewsProduct from "../components/productdetail/reviewsproduct";
 import Footer from '../components/section/footer';
 import { ThreeDots } from "react-loader-spinner"; // Import spinner loader
+import Discuss from "../components/productdetail/discuss";
 
 const ProductDetail = () => {
   const { productId } = useParams(); 
@@ -14,6 +17,31 @@ const ProductDetail = () => {
   const [isLoading, setIsLoading] = useState(true); // Track loading state
   const apiUrl = process.env.REACT_APP_API_BASE_URL; 
   const cdnUrl = process.env.REACT_APP_CDN_BASE_URL; 
+  const { isAuthenticated, token } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleAddToCart = async (quantity) => {
+    if (!isAuthenticated) {
+      toast.error("Please login to add items to cart");
+      navigate('/login');
+      return;
+    }
+
+    try {
+      await axios.post(
+        `${apiUrl}/cart/add/${productId}/${quantity}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      toast.success("Product added to cart successfully!");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to add product to cart");
+    }
+  };
 
   useEffect(() => {
     const fetchProductData = async () => {
@@ -74,9 +102,16 @@ const ProductDetail = () => {
   return (
     <div>
       <Header />
-      <ProductSection productData={productData} />
-      <RelatedProduct />
+      <ProductSection 
+        productData={productData} 
+        onAddToCart={handleAddToCart}
+      />
+      <RelatedProduct 
+        categoryId={productData?.categoryId?._id} 
+        currentProductId={productData?._id}
+      />
       <ReviewsProduct />
+      <Discuss />
       <Footer />
     </div>
   );

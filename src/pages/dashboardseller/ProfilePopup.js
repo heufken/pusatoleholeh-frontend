@@ -3,7 +3,7 @@ import axios from "axios";
 import { AuthContext } from "../../components/context/AuthContext";
 import toast from 'react-hot-toast';
 
-const ProfilePopup = ({ onUpdateAddress, onClose }) => {
+const ProfilePopup = ({ onUpdateAddress, onUpdateShop, onClose }) => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     name: "",
@@ -13,14 +13,24 @@ const ProfilePopup = ({ onUpdateAddress, onClose }) => {
     subdistrict: "",
     postalCode: "",
   });
+  const [shopData, setShopData] = useState({
+    shopName: "",
+    description: "",
+    username: "",
+  });
+  const [addressId, setAddressId] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
 
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const { token } = useContext(AuthContext);
 
-  const handleChange = (e) => {
+  const handleChange = (e, dataKey) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (dataKey === "address") {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    } else if (dataKey === "shop") {
+      setShopData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleAddressSubmit = async (e) => {
@@ -28,19 +38,73 @@ const ProfilePopup = ({ onUpdateAddress, onClose }) => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
       const response = await axios.post(`${apiUrl}/user/address`, formData, { headers });
-      
+  
+      let createdAddressId = response.data?.address?._id;
+      if (!createdAddressId) {
+        const getAddressResponse = await axios.get(`${apiUrl}/user/address`, { headers });
+        const latestAddress = getAddressResponse.data.address?.[0];
+        createdAddressId = latestAddress?._id;
+      }
+  
+      if (!createdAddressId) throw new Error('Failed to retrieve address ID.');
+  
+      setAddressId(createdAddressId);
       toast.success('Address successfully saved!');
       onUpdateAddress(response.data.address);
-      setStep(4); // Langsung ke halaman selesai
+  
+      // Lanjut ke step berikutnya (form toko)
+      setStep(4); // Karena sekarang form toko ada di step 4
     } catch (error) {
       console.error('Error saving address:', error);
       toast.error('Failed to save address. Please try again.');
     }
   };
 
+  const handleShopSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      const payload = {
+        name: shopData.shopName,
+        description: shopData.description,
+        addressId,
+        username: shopData.username,
+        province: formData.province,
+        city: formData.city,
+        district: formData.district,
+        subdistrict: formData.subdistrict,
+        postalCode: formData.postalCode
+      };
+  
+      const response = await axios.post(`${apiUrl}/shop/create`, payload, { headers });
+  
+      toast.success('Shop data successfully saved!');
+      onUpdateShop(response.data.shop);
+  
+      // Ubah dari setStep(4) menjadi setStep(5)
+      setStep(5);  // Beralih ke halaman konfirmasi selesai
+    } catch (error) {
+      console.error('Error saving shop data:', error);
+      toast.error('Failed to save shop data. Please try again.');
+    }
+  };
+  
+
+  const handleNext = () => {
+    setStep(step + 1);
+  };
+
+  // const handleSkip = () => {
+  //   setStep(step + 1); // Skip to the next step
+  // };
+
+  // const togglePopup = () => {
+  //   onClose(); // Close the popup
+  // };
+
   const handleImageUpload = async () => {
     if (!selectedImage) {
-      handleNext();
+      handleNext(); // Skip jika tidak ada gambar yang dipilih
       return;
     }
 
@@ -88,8 +152,6 @@ const ProfilePopup = ({ onUpdateAddress, onClose }) => {
   const handleDragOver = (e) => {
     e.preventDefault();
   };
-
-  const handleNext = () => setStep(step + 1);
 
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50">
@@ -161,7 +223,7 @@ const ProfilePopup = ({ onUpdateAddress, onClose }) => {
                   type="text"
                   name={field}
                   value={formData[field]}
-                  onChange={(e) => handleChange(e)}
+                  onChange={(e) => handleChange(e, "address")}
                   className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
@@ -177,6 +239,33 @@ const ProfilePopup = ({ onUpdateAddress, onClose }) => {
         )}
 
         {step === 4 && (
+          <form onSubmit={handleShopSubmit}>
+            <h2 className="text-2xl font-semibold mb-4 text-center">Complete Your Shop Information</h2>
+            {["shopName", "description", "username"].map((field) => (
+              <div key={field} className="mb-4">
+                <label className="block mb-2 capitalize text-gray-700">
+                  {field === "shopName" ? "Name" : field}
+                </label>
+                <input
+                  type="text"
+                  name={field}
+                  value={shopData[field]}
+                  onChange={(e) => handleChange(e, "shop")}
+                  className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+            ))}
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full hover:bg-blue-700 transition-colors"
+            >
+              Save Shop Data
+            </button>
+          </form>
+        )}
+
+        {step === 5 && (
           <>
             <h2 className="text-2xl font-semibold mb-4 text-center">Profile setup completed!</h2>
             <p className="mb-6 text-center text-gray-600">You can now browse the website and shop freely.</p>

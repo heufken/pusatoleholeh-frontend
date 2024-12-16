@@ -13,8 +13,8 @@ const DataToko = () => {
   const shopData = useContext(ShopContext);  // Ambil data dari ShopContext
   const { addressData } = useContext(UserContext);  // Ambil data dari UserContext
   const { token } = useContext(AuthContext);
-  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
-  const [isUploadingBanner, setIsUploadingBanner] = useState(false);
+  // const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  // const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
   const [activeTab, setActiveTab] = useState('Informasi');

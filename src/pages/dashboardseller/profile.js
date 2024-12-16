@@ -2,9 +2,10 @@ import React, { useState, useContext, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../../components/context/AuthContext';
 import { UserContext } from './dashboardseller';
-import { CameraIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { CameraIcon } from '@heroicons/react/24/outline';
+// import { ToastContainer, toast } from 'react-toastify';
+// import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-hot-toast';
 
 const ProfileSeller = () => {
   const { token } = useContext(AuthContext);
@@ -20,7 +21,6 @@ const ProfileSeller = () => {
   });
   const [selectedImage, setSelectedImage] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
-  const [message, setMessage] = useState('');
   const [existingImage, setExistingImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isDeletingImage, setIsDeletingImage] = useState(false);
@@ -172,7 +172,7 @@ const ProfileSeller = () => {
 
   return (
     <div className="p-6">
-      <ToastContainer />
+
       <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-6">
         <h1 className="text-2xl font-bold mb-6 text-gray-700 text-center">Profil Penjual</h1>
 
