@@ -1,8 +1,9 @@
-import React, { useContext, useState, useEffect, useRef } from "react";
+import React, { useContext, useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import DropdownMenu from "./nav-dropdown";
+// import DropdownMenu from "./nav-dropdown";
 import { UserIcon, BellIcon, EnvelopeIcon, ShoppingCartIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import useCartCount from "../useCartCount";
 
 function Nav() {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ function Nav() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const dropdownRef = useRef(null);
   const timeoutRef = useRef(null);
+  const cartCount = useCartCount();
 
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
@@ -34,7 +36,7 @@ function Nav() {
 
   const handleProfileRedirect = () => {
     if (user?.role === "buyer") {
-      navigate("/buyerprofile");
+      navigate("/user");
     } else if (user?.role === "seller") {
       navigate("/dashboard-seller");
     }
@@ -47,7 +49,7 @@ function Nav() {
     }
   };
 
-  const controlNavbar = () => {
+  const controlNavbar = useCallback(() => {
     if (typeof window !== 'undefined') {
       if (window.scrollY > lastScrollY) {
         // scroll down
@@ -58,7 +60,7 @@ function Nav() {
       }
       setLastScrollY(window.scrollY);
     }
-  };
+  }, [lastScrollY]);
 
   const handleDropdownOpen = () => {
     if (timeoutRef.current) {
@@ -98,7 +100,7 @@ function Nav() {
         window.removeEventListener('scroll', controlNavbar);
       };
     }
-  }, [lastScrollY]);
+  }, [controlNavbar]);
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${showNav ? 'translate-y-0' : '-translate-y-full'}`}>
@@ -106,7 +108,7 @@ function Nav() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-8">
-              <div className="flex items-center space-x-3">
+              <div onClick={() => window.location.href = '/'} className="flex items-center space-x-3 cursor-pointer">
                 <div className="">
                   <img src="/logo.png" alt="Logo" className="w-8 h-8" />
                 </div>
@@ -148,7 +150,11 @@ function Nav() {
                 </button>
                 <button onClick={() => navigate('/cart')} className="p-2 text-gray-600 hover:text-[#4F46E5] hover:bg-gray-100 rounded-lg transition-all relative">
                   <ShoppingCartIcon className="h-6 w-6" />
-                  <span className="absolute -top-1 -right-1 bg-[#7C3AED] text-white text-xs font-bold px-2 py-0.5 rounded-full">2</span>
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-[#7C3AED] text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                      {cartCount}
+                    </span>
+                  )}
                 </button>
 
                 {isAuthenticated ? (
