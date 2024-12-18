@@ -14,6 +14,10 @@ import Shop from "./pages/shop";
 import Cart from "./pages/cart";
 import Checkout from "./pages/checkout";
 import ProtectedRoute from "./components/protectedroute";
+import ArticlePage from "./pages/articlehomepage";
+import Article from "./pages/article";
+import CartPage from "./pages/CartPage";
+import CheckoutPage from "./pages/CheckoutPage";
 
 function App() {
   return (
@@ -28,7 +32,9 @@ function App() {
           <Route path="/search" element={<Search />} />
           <Route path="/shop/:shopName" element={<Shop />} />
           <Route path="/product/:productId" element={<ProductDetail />} />
-          
+          <Route path="/articlehomepage" element={<ArticlePage />} />
+          <Route path="/article" element={<Article />} />
+          <Route path="/cart" element={<CartPage />} />
           {/* Rute terproteksi */}
           <Route element={<ProtectedRoute allowedRoles={["seller"]} />}>
             <Route path="/dashboard-seller/*" element={<DashboardSeller />} />
@@ -38,8 +44,8 @@ function App() {
           {/* Rute terproteksi */}
           <Route element={<ProtectedRoute allowedRoles={["buyer"]} />}>
             <Route path="/user/*" element={<DashboardBuyer />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/cart/checkout" element={<Checkout />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
           </Route>
         </Routes>
         <Toaster position="top-right" reverseOrder={false} />
