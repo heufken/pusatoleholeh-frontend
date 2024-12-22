@@ -12,7 +12,6 @@ const CheckoutPage = () => {
   // State untuk data
   const [cartItems, setCartItems] = useState([]);
   const [isProductsExpanded, setIsProductsExpanded] = useState(true);
-  const [expandedItems, setExpandedItems] = useState({});
   const [couriers, setCouriers] = useState([]);
   const [selectedCourier, setSelectedCourier] = useState('');
   const [voucherCode, setVoucherCode] = useState('');
@@ -28,6 +27,7 @@ const CheckoutPage = () => {
       try {
         // Get selected items from localStorage
         const selectedItems = JSON.parse(localStorage.getItem('checkoutItems') || '[]');
+        const savedCourier = JSON.parse(localStorage.getItem('selectedCourier'));
         
         if (selectedItems.length === 0) {
           toast.error('Tidak ada produk yang dipilih untuk checkout', {
@@ -56,6 +56,12 @@ const CheckoutPage = () => {
         ]);
 
         setCouriers(couriersResponse.data);
+        
+        // Set selected courier from localStorage if exists
+        if (savedCourier) {
+          setSelectedCourier(savedCourier._id);
+        }
+        
         setPaymentMethod(paymentResponse.data.paymentMethod);
         setLoading(false);
       } catch (error) {
@@ -68,6 +74,11 @@ const CheckoutPage = () => {
     if (isAuthenticated) {
       fetchData();
     }
+    
+    // Cleanup localStorage when component unmounts
+    return () => {
+      localStorage.removeItem('selectedCourier');
+    };
   }, [isAuthenticated, navigate, token, apiUrl]);
 
   // Kalkulasi total
@@ -163,13 +174,6 @@ const CheckoutPage = () => {
       toast.error(errorMessage);
       console.error('Checkout Error:', error);
     }
-  };
-
-  const toggleItemExpansion = (itemId) => {
-    setExpandedItems(prev => ({
-      ...prev,
-      [itemId]: !prev[itemId]
-    }));
   };
 
   if (loading) {
