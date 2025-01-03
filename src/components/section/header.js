@@ -96,6 +96,7 @@ function Header() {
                   role={userData?.role}
                   onProfileClick={handleProfileRedirect}
                   onDashboardClick={handleDashboardRedirect}
+                  onWishlistClick={() => navigate('/wishlist')}
                   onLogoutClick={handleLogout}
                 />
               )}

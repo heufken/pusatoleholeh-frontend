@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useCallback, useRef } from 'react';
+import { useState, useEffect, useContext, useCallback, useRef, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { TrashIcon } from '@heroicons/react/24/solid';
 import Header from '../components/section/header';
@@ -9,6 +9,7 @@ import { toast } from 'react-hot-toast';
 import { ThreeDots } from "react-loader-spinner";
 
 const $apiUrl = process.env.REACT_APP_API_BASE_URL;
+const $cdnUrl = process.env.REACT_APP_CDN_BASE_URL;
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -29,6 +30,48 @@ const CartPage = () => {
   const [selectedCourier, setSelectedCourier] = useState('');
   const [batchDeleteModal, setBatchDeleteModal] = useState({ show: false, count: 0 });
 
+  // Group cart items by shop
+  const groupedCartItems = useMemo(() => {
+    return cartItems.reduce((acc, item) => {
+      const shopId = item.productId.shopId._id;
+      if (!acc[shopId]) {
+        acc[shopId] = {
+          shopId: shopId,
+          shopName: item.productId.shopId.name,
+          items: []
+        };
+      }
+      acc[shopId].items.push(item);
+      return acc;
+    }, {});
+  }, [cartItems]);
+
+  const normalizeUrl = useCallback(
+    (url) => {
+      if (!url) return null;
+      
+      try {
+        // Buat URL object untuk parsing
+        const urlObj = new URL(url.replace(/\\/g, "/"));
+        
+        // Ambil pathname dari URL (bagian setelah host)
+        const pathname = urlObj.pathname;
+        
+        // Gabungkan dengan CDN URL
+        return new URL(pathname, $cdnUrl).toString();
+      } catch (e) {
+        // Jika URL invalid, coba cara alternatif
+        const cleanPath = url
+          .replace(/^(?:https?:)?(?:\/\/)?[^/]+/, '') // Hapus protocol dan host (perbaikan escape character)
+          .replace(/\\/g, "/")                         // Normalize slashes
+          .replace(/^\/+/, '/');                       // Pastikan hanya ada satu leading slash
+
+        return `${$cdnUrl}${cleanPath}`;
+      }
+    },
+    []
+  );
+
   const fetchCart = useCallback(async () => {
     try {
       setLoading(true);
@@ -48,16 +91,7 @@ const CartPage = () => {
       });
       setLocalQuantities(quantities);
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to fetch cart', {
-        duration: 2000,
-        position: 'top-center',
-        style: {
-          background: '#FEE2E2',
-          color: '#DC2626',
-          border: '1px solid #DC2626',
-        },
-      });
-      setCartItems([]);
+      setCartItems([]); // Set empty array instead of showing error
     } finally {
       setLoading(false);
     }
@@ -125,15 +159,6 @@ const CartPage = () => {
       Object.values(currentTimers).forEach(timer => clearTimeout(timer));
     };
   }, []);
-
-  const removeItem = async (cartId) => {
-    const item = cartItems.find(item => item._id === cartId);
-    setDeleteModal({ 
-      show: true, 
-      itemId: cartId, 
-      itemName: item.productId.name 
-    });
-  };
 
   const handleConfirmDelete = async () => {
     try {
@@ -380,49 +405,46 @@ const CartPage = () => {
 
   const handleCheckout = () => {
     if (selectedItems.length === 0) {
-      toast.error('Pilih minimal satu produk untuk checkout', {
-        duration: 2000,
-        position: 'top-center',
-        style: {
-          background: '#FEE2E2',
-          color: '#DC2626',
-          border: '1px solid #DC2626',
-        },
-      });
+      toast.error('Pilih minimal satu produk untuk checkout');
       return;
     }
 
-    if (!selectedCourier) {
-      toast.error('Silakan pilih kurir pengiriman terlebih dahulu', {
-        duration: 2000,
-        position: 'top-center',
-        style: {
-          background: '#FEE2E2',
-          color: '#DC2626',
-          border: '1px solid #DC2626',
-        },
-      });
-      return;
-    }
+    try {
+      // Group selected items by shop
+      const selectedProducts = cartItems.filter(item => selectedItems.includes(item._id));
+      const groupedByShop = selectedProducts.reduce((acc, item) => {
+        const shopId = item.productId.shopId._id;
+        if (!acc[shopId]) {
+          acc[shopId] = {
+            shopId: shopId,
+            shopName: item.productId.shopId.name,
+            products: []
+          };
+        }
+        
+        acc[shopId].products.push({
+          productId: item.productId._id,
+          name: item.productId.name,
+          price: item.productId.price,
+          quantity: item.quantity,
+          image: normalizeUrl(item.productCover),
+          stock: item.productId.stock
+        });
+        
+        return acc;
+      }, {});
 
-    // Filter cart items based on selection
-    const selectedCartItems = cartItems.filter(item => selectedItems.includes(item._id));
-    
-    // Save to localStorage for checkout page
-    localStorage.setItem('checkoutItems', JSON.stringify(selectedCartItems));
-    
-    // Save selected courier and its details
-    const selectedCourierData = couriers.find(c => c._id === selectedCourier);
-    if (selectedCourierData) {
-      localStorage.setItem('selectedCourier', JSON.stringify(selectedCourierData));
-    }
+      // Convert to array format expected by checkout
+      const checkoutData = {
+        shops: Object.values(groupedByShop)
+      };
 
-    // Save cart totals
-    const cartTotals = calculateTotals();
-    localStorage.setItem('cartTotals', JSON.stringify(cartTotals));
-    
-    // Navigate to checkout
-    navigate('/checkout');
+      localStorage.setItem('checkoutItems', JSON.stringify(checkoutData));
+      navigate('/checkout');
+    } catch (error) {
+      console.error('Error preparing checkout data:', error);
+      toast.error('Gagal mempersiapkan data checkout');
+    }
   };
 
   const handleProductClick = (productId) => {
@@ -531,6 +553,59 @@ const CartPage = () => {
       setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <Header />
+        <div className="flex justify-center items-center h-[60vh]">
+          <ThreeDots color="#4F46E5" height={50} width={50} />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (cartItems.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="bg-white rounded-lg shadow-md p-8 text-center">
+            <div className="w-48 h-48 mx-auto mb-6 bg-indigo-100 rounded-full flex items-center justify-center">
+              <svg 
+                className="w-24 h-24 text-[#4F46E5]" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24" 
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth="2" 
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-semibold text-[#4F46E5] mb-4">
+              Keranjang Belanja Kosong
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Anda belum menambahkan produk apapun ke keranjang.
+            </p>
+            <Link 
+              to="/" 
+              className="inline-block bg-gradient-to-r from-[#4F46E5] to-[#4338CA] text-white px-6 py-3 rounded-md hover:from-[#4338CA] hover:to-[#3730A3] transition-all duration-300 shadow-md hover:shadow-lg"
+            >
+              Mulai Belanja
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -680,83 +755,82 @@ const CartPage = () => {
                         </button>
                       )}
                     </div>
+
                     <div className="divide-y divide-purple-200">
-                      {cartItems.map((item) => (
-                        <div key={item._id} className="py-6 first:pt-0 last:pb-0">
-                          <div className="flex gap-4">
-                            <input
-                              type="checkbox"
-                              checked={selectedItems.includes(item._id)}
-                              onChange={() => handleSelectItem(item._id)}
-                              className="mt-2"
-                              aria-label={`Select item ${item.productId.name}`}
-                            />
-                            <div 
-                              className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-75 transition-opacity"
-                              onClick={() => handleProductClick(item.productId._id)}
-                            >
-                              <img
-                                src={item.productId.image || "https://via.placeholder.com/100"}
-                                alt={item.productId.name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex justify-between">
-                                <h3 
-                                  className="text-lg font-semibold text-gray-900 truncate cursor-pointer hover:text-[#4F46E5] transition-colors"
+                      {Object.values(groupedCartItems).map((shop) => (
+                        <div key={shop.shopId} className="py-4">
+                          <div className="flex items-center mb-4">
+                            <h3 className="font-medium text-gray-900">{shop.shopName}</h3>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            {shop.items.map((item) => (
+                              <div key={item._id} className="flex gap-4">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedItems.includes(item._id)}
+                                  onChange={() => handleSelectItem(item._id)}
+                                  className="mt-2"
+                                />
+                                <div 
+                                  className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-75 transition-opacity"
                                   onClick={() => handleProductClick(item.productId._id)}
                                 >
-                                  {item.productId.name}
-                                </h3>
-                                <p className="text-[#4F46E5] font-medium mt-1">
-                                  Rp{(item.productId.price * localQuantities[item._id]).toLocaleString('id-ID')},00
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-2 mt-1">
-                                <p className="text-sm text-blue-600">
-                                  {item.productId.stock > 0 ? 'In Stock' : 'Out of Stock'}
-                                </p>
-                                <span className="text-gray-300">|</span>
-                                <p className="text-sm text-gray-600">
-                                  Rp{item.productId.price.toLocaleString('id-ID')},00 / pcs
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-6 mt-4">
-                                <div className="flex items-center">
-                                  <button 
-                                    className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-l-lg transition-colors ${
-                                      localQuantities[item._id] <= 1 ? 'bg-gray-100 cursor-not-allowed' : 'hover:bg-gray-50'
-                                    }`}
-                                    onClick={() => handleQuantityChange(item._id, Math.max(1, localQuantities[item._id] - 1))}
-                                    disabled={localQuantities[item._id] <= 1}
-                                  >
-                                    -
-                                  </button>
-                                  <div className="w-12 h-8 flex items-center justify-center border-t border-b border-gray-300">
-                                    {localQuantities[item._id]}
+                                  <img
+                                    src={normalizeUrl(item.productCover)}
+                                    alt={item.productId.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex justify-between">
+                                    <h3 
+                                      className="text-lg font-semibold text-gray-900 truncate cursor-pointer hover:text-[#4F46E5] transition-colors"
+                                      onClick={() => handleProductClick(item.productId._id)}
+                                    >
+                                      {item.productId.name}
+                                    </h3>
+                                    <p className="text-[#4F46E5] font-medium mt-1">
+                                      Rp{(item.productId.price * localQuantities[item._id]).toLocaleString('id-ID')},00
+                                    </p>
                                   </div>
-                                  <button 
-                                    className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-r-lg transition-colors ${
-                                      localQuantities[item._id] >= item.productId.stock ? 'bg-gray-100 cursor-not-allowed' : 'hover:bg-gray-50'
-                                    }`}
-                                    onClick={() => handleQuantityChange(item._id, Math.min(item.productId.stock, localQuantities[item._id] + 1))}
-                                    disabled={localQuantities[item._id] >= item.productId.stock}
-                                  >
-                                    +
-                                  </button>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <p className="text-sm text-blue-600">
+                                      {item.productId.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                                    </p>
+                                    <span className="text-gray-300">|</span>
+                                    <p className="text-sm text-gray-600">
+                                      Rp{item.productId.price.toLocaleString('id-ID')},00 / pcs
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center gap-6 mt-4">
+                                    <div className="flex items-center">
+                                      <button 
+                                        className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-l-lg transition-colors ${
+                                          localQuantities[item._id] <= 1 ? 'bg-gray-100 cursor-not-allowed' : 'hover:bg-gray-50'
+                                        }`}
+                                        onClick={() => handleQuantityChange(item._id, Math.max(1, localQuantities[item._id] - 1))}
+                                        disabled={localQuantities[item._id] <= 1}
+                                      >
+                                        -
+                                      </button>
+                                      <div className="w-12 h-8 flex items-center justify-center border-t border-b border-gray-300">
+                                        {localQuantities[item._id]}
+                                      </div>
+                                      <button 
+                                        className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-r-lg transition-colors ${
+                                          localQuantities[item._id] >= item.productId.stock ? 'bg-gray-100 cursor-not-allowed' : 'hover:bg-gray-50'
+                                        }`}
+                                        onClick={() => handleQuantityChange(item._id, Math.min(item.productId.stock, localQuantities[item._id] + 1))}
+                                        disabled={localQuantities[item._id] >= item.productId.stock}
+                                      >
+                                        +
+                                      </button>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <button 
-                                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors" 
-                                onClick={() => removeItem(item._id)}
-                                aria-label="Remove item"
-                              >
-                                <TrashIcon className="w-5 h-5 text-gray-400" />
-                              </button>
-                            </div>
+                            ))}
                           </div>
                         </div>
                       ))}

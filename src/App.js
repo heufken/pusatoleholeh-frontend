@@ -11,13 +11,17 @@ import AddProduct from "./pages/dashboardseller/addproduct";
 import Search from "./pages/search";
 import ProductDetail from "./pages/productdetail";
 import Shop from "./pages/shop";
-import Cart from "./pages/cart";
-import Checkout from "./pages/checkout";
+// import Cart from "./pages/cart";
+// import Checkout from "./pages/checkout";
 import ProtectedRoute from "./components/protectedroute";
 import ArticlePage from "./pages/articlehomepage";
 import Article from "./pages/article";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import Transaction from "./pages/transaction";
+import WishlistPage from "./pages/wishlist";
+
+
 
 function App() {
   return (
@@ -46,6 +50,8 @@ function App() {
             <Route path="/user/*" element={<DashboardBuyer />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/transaction" element={<Transaction />} />
+            <Route path="/wishlist" element={<WishlistPage />} />
           </Route>
         </Routes>
         <Toaster position="top-right" reverseOrder={false} />

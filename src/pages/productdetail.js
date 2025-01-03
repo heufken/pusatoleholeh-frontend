@@ -43,6 +43,30 @@ const ProductDetail = () => {
     }
   };
 
+  const addToWishlist = async () => {
+    if (!isAuthenticated) {
+      toast.error("Please login to add items to wishlist");
+      navigate('/login');
+      return;
+    }
+
+    try {
+      await axios.post(
+        `${apiUrl}/wishlist/${productId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      toast.success("Product added to wishlist successfully!");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to add product to wishlist");
+    }
+  };
+
+
   useEffect(() => {
     const fetchProductData = async () => {
       try {
@@ -105,6 +129,7 @@ const ProductDetail = () => {
       <ProductSection 
         productData={productData} 
         onAddToCart={handleAddToCart}
+        addToWishlist={addToWishlist}
       />
       <RelatedProduct 
         categoryId={productData?.categoryId?._id} 

@@ -21,7 +21,7 @@ const Discuss = () => {
 
   // Fungsi untuk mendapatkan userId dari discussion
   const getUserIdFromDiscussion = (discussion) => {
-    return discussion?.userId?._id || 'Unknown';
+    return discussion?.userId?.name || 'Unknown';
   };
 
   // Bungkus fetchDiscussions dengan useCallback
@@ -218,7 +218,7 @@ const Discuss = () => {
                       </div>
                       <div>
                         <span className="font-medium text-gray-900">
-                          User: {getUserIdFromDiscussion(mainDiscussion)}
+                          {getUserIdFromDiscussion(mainDiscussion)}
                         </span>
                         <p className="text-sm text-gray-500">
                           {format(new Date(mainDiscussion.createdAt), 'MMM d, yyyy HH:mm')}
@@ -293,7 +293,7 @@ const Discuss = () => {
                               </div>
                               <div>
                                 <span className="font-medium text-gray-900 text-sm">
-                                  User: {getUserIdFromDiscussion(reply)}
+                                  {getUserIdFromDiscussion(reply)}
                                 </span>
                                 <p className="text-xs text-gray-500">
                                   {format(new Date(reply.createdAt), 'MMM d, yyyy HH:mm')}

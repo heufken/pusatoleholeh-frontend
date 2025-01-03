@@ -11,7 +11,7 @@ import Pesanan from './pesanan';
 import Keuangan from './keuangan';
 import ProfileSeller from './profile';
 import { AuthContext } from '../../components/context/AuthContext';
-import ProfilePopup from '../../components/landing/ProfilePopup';
+import ProfilePopup from './ProfilePopup';
 
 export const ShopContext = createContext();
 export const UserContext = createContext();

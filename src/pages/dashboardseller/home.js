@@ -1,9 +1,49 @@
-import React, { useEffect } from 'react';
-import { ExclamationTriangleIcon } from '@heroicons/react/24/solid'; // Import Heroicons
+import React, { useEffect, useState, useContext } from 'react';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/solid';
+import axios from 'axios';
+import { AuthContext } from '../../components/context/AuthContext';
 
 const Home = () => {
+  const [transactionStats, setTransactionStats] = useState({
+    newOrders: 0,
+    readyToShip: 0,
+    totalSales: 0
+  });
+  const { token } = useContext(AuthContext);
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
+
   useEffect(() => {
-  }, []);
+    const fetchTransactionStats = async () => {
+      try {
+        const response = await axios.get(`${apiUrl}/transaction/seller`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const stats = response.data.transactionStatuses.reduce((acc, transaction) => {
+          switch (transaction.status) {
+            case 'Paid':
+              acc.newOrders++;
+              break;
+            case 'Processed':
+              acc.readyToShip++;
+              break;
+            case 'Completed':
+              acc.totalSales++;
+              break;
+            default:
+              break;
+          }
+          return acc;
+        }, { newOrders: 0, readyToShip: 0, totalSales: 0 });
+
+        setTransactionStats(stats);
+      } catch (error) {
+        console.error('Error fetching transaction stats:', error);
+      }
+    };
+
+    fetchTransactionStats();
+  }, [token, apiUrl]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -12,10 +52,15 @@ const Home = () => {
         <p className="mb-4">Aktivitas Penting Yang Harus Dilakukan</p>
         <div className="mb-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {['Pesanan Baru', 'Siap Terkirim', 'Chat Baru', 'Total Sales'].map((item, index) => (
+            {[
+              { label: 'Pesanan Baru', value: transactionStats.newOrders },
+              { label: 'Siap Terkirim', value: transactionStats.readyToShip },
+              { label: 'Chat Baru', value: 0 },
+              { label: 'Total Sales', value: transactionStats.totalSales }
+            ].map((item, index) => (
               <div key={index} className="bg-white p-4 rounded-lg shadow">
-                <h2 className="text-lg font-semibold">{item}</h2>
-                <p className="text-2xl font-bold">0</p>
+                <h2 className="text-lg font-semibold">{item.label}</h2>
+                <p className="text-2xl font-bold">{item.value}</p>
               </div>
             ))}
           </div>

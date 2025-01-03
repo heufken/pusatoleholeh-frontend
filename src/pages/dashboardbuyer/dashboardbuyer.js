@@ -6,11 +6,13 @@ import Header from '../../components/section/header';
 import Footer from '../../components/section/footer';
 import Profile from './profile';
 import Address from './address';
+import Payment from './payment';
 
 const DashboardBuyer = () => {
   const [userData, setUserData] = useState(null);
   const [userImage, setUserImage] = useState(null);
   const [addressData, setAddressData] = useState([]);
+  const [paymentData, setPaymentData] = useState([]);
   const { token } = useContext(AuthContext);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
@@ -18,11 +20,15 @@ const DashboardBuyer = () => {
     const fetchData = async () => {
       try {
         const headers = { Authorization: `Bearer ${token}` };
-        const response = await axios.get(`${apiUrl}/user`, { headers });
+        const [userResponse, paymentResponse] = await Promise.all([
+          axios.get(`${apiUrl}/user`, { headers }),
+          axios.get(`${apiUrl}/user/payment`, { headers })
+        ]);
         
-        setUserData(response.data.user);
-        setUserImage(response.data.image?.[0]);
-        setAddressData(response.data.address || []);
+        setUserData(userResponse.data.user);
+        setUserImage(userResponse.data.image?.[0]);
+        setAddressData(userResponse.data.address || []);
+        setPaymentData(paymentResponse.data.paymentMethods || []);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -56,7 +62,7 @@ const DashboardBuyer = () => {
             <NavLink
               to="address"
               className={({ isActive }) =>
-                `px-4 py-2 ${
+                `px-4 py-2 mr-4 ${
                   isActive
                     ? 'border-b-2 border-blue-500 text-blue-500'
                     : 'text-gray-500'
@@ -64,6 +70,18 @@ const DashboardBuyer = () => {
               }
             >
               Alamat
+            </NavLink>
+            <NavLink
+              to="payment"
+              className={({ isActive }) =>
+                `px-4 py-2 ${
+                  isActive
+                    ? 'border-b-2 border-blue-500 text-blue-500'
+                    : 'text-gray-500'
+                }`
+              }
+            >
+              Pembayaran
             </NavLink>
           </div>
 
@@ -76,6 +94,10 @@ const DashboardBuyer = () => {
             <Route 
               path="address" 
               element={<Address addressData={addressData} />} 
+            />
+            <Route 
+              path="payment" 
+              element={<Payment paymentData={paymentData} />} 
             />
             <Route path="/" element={<Navigate to="profile" replace />} />
           </Routes>
