@@ -1,17 +1,22 @@
-import React, { useState, useEffect, createContext, useContext, useCallback } from 'react';
+import React, { useState, useEffect, createContext, useContext, useCallback, Suspense } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from 'react-hot-toast';
+import { AuthContext } from '../../components/context/AuthContext';
 import Header from '../../components/section/header';
 import Sidebar from '../../components/dashboardseller/sidebar';
 import Footer from '../../components/dashboardseller/footer';
-import Home from './home';
-import Produk from './produk';
-import DataToko from './datatoko';
-import Pesanan from './pesanan';
-import Keuangan from './keuangan';
-import ProfileSeller from './profile';
-import { AuthContext } from '../../components/context/AuthContext';
-import ProfilePopup from '../../components/landing/ProfilePopup';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+import ErrorBoundary from '../../components/common/ErrorBoundary';
+
+// Lazy load components
+const Home = React.lazy(() => import('./home'));
+const Produk = React.lazy(() => import('./produk'));
+const DataToko = React.lazy(() => import('./datatoko'));
+const Pesanan = React.lazy(() => import('./pesanan'));
+const Keuangan = React.lazy(() => import('./keuangan'));
+const ProfileSeller = React.lazy(() => import('./profile'));
+const ProfilePopup = React.lazy(() => import('./ProfilePopup'));
 
 export const ShopContext = createContext();
 export const UserContext = createContext();
@@ -23,6 +28,8 @@ const DashboardSeller = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [isPopupVisible, setPopupVisible] = useState(true);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const { token } = useContext(AuthContext);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -38,42 +45,53 @@ const DashboardSeller = () => {
       .replace(":/", "://");
   }, [cdnUrl]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const headers = { Authorization: `Bearer ${token}` };
+  const fetchData = useCallback(async () => {
+    if (!token) {
+      setError('Token tidak ditemukan');
+      setIsLoading(false);
+      return;
+    }
 
-        const [shopResponse, userResponse, addressResponse] = await Promise.all([
-          axios.get(`${apiUrl}/shop`, { headers }),
-          axios.get(`${apiUrl}/user`, { headers }),
-          axios.get(`${apiUrl}/user/address`, { headers }),
-        ]);
+    try {
+      setIsLoading(true);
+      setError(null);
+      const headers = { Authorization: `Bearer ${token}` };
 
-        setShopData({
-          ...shopResponse.data.shop,
-          shopImage: normalizeUrl(shopResponse.data.shopImage),
-          shopBanner: normalizeUrl(shopResponse.data.shopBanner)
-        });
-        
-        setUserData(userResponse.data.user || null);
-        setAddressData(addressResponse.data.address || null);
-        setInitialLoadComplete(true);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setInitialLoadComplete(true);
-      }
-    };
+      const [shopResponse, userResponse, addressResponse] = await Promise.all([
+        axios.get(`${apiUrl}/shop`, { headers }),
+        axios.get(`${apiUrl}/user`, { headers }),
+        axios.get(`${apiUrl}/user/address`, { headers }),
+      ]);
 
-    if (token) fetchData();
+      setShopData({
+        ...shopResponse.data.shop,
+        shopImage: normalizeUrl(shopResponse.data.shopImage),
+        shopBanner: normalizeUrl(shopResponse.data.shopBanner)
+      });
+      
+      setUserData(userResponse.data.user || null);
+      setAddressData(addressResponse.data.address || null);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setError(error.response?.data?.message || 'Terjadi kesalahan saat mengambil data');
+      toast.error('Gagal memuat data dashboard');
+    } finally {
+      setIsLoading(false);
+      setInitialLoadComplete(true);
+    }
   }, [apiUrl, token, cdnUrl, normalizeUrl]);
 
-  const updateAddressData = (newAddress) => {
-    setAddressData(newAddress);
-  };
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-  const updateShopData = (newShopData) => {
+  const updateAddressData = useCallback((newAddress) => {
+    setAddressData(newAddress);
+  }, []);
+
+  const updateShopData = useCallback((newShopData) => {
     setShopData(newShopData);
-  };
+  }, []);
 
   const isProfileIncomplete = !addressData || !shopData;
 
@@ -83,9 +101,32 @@ const DashboardSeller = () => {
     navigate(0);
   };
 
-  const toggleSidebar = () => setIsCollapsed((prev) => !prev);
+  const toggleSidebar = useCallback(() => {
+    setIsCollapsed((prev) => !prev);
+  }, []);
 
   const shouldShowPopup = initialLoadComplete && isProfileIncomplete && isPopupVisible;
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+          <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Error</h2>
+          <p className="text-gray-600">{error}</p>
+            <button
+              onClick={fetchData}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+            >
+              Coba Lagi
+            </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ShopContext.Provider value={shopData}>
@@ -100,7 +141,9 @@ const DashboardSeller = () => {
           <div className="flex flex-1 overflow-hidden">
             {/* Sidebar */}
             <div
-              className={`bg-white shadow-md transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'}`}
+              className={`bg-white shadow-md transition-all duration-300 ${
+                isCollapsed ? 'w-16' : 'w-64'
+              }`}
             >
               <Sidebar
                 isCollapsed={isCollapsed}
@@ -110,15 +153,19 @@ const DashboardSeller = () => {
 
             {/* Content Area */}
             <div className="flex-grow p-6 pr-4 overflow-auto">
-              <Routes>
-                <Route path="home" element={<Home />} />
-                <Route path="produk" element={<Produk />} />
-                <Route path="datatoko" element={<DataToko />} />
-                <Route path="pesanan" element={<Pesanan />} />
-                <Route path="keuangan" element={<Keuangan />} />
-                <Route path="profile" element={<ProfileSeller />} />
-                <Route path="/" element={<Navigate to="home" />} />
-              </Routes>
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <Routes>
+                    <Route path="home" element={<Home />} />
+                    <Route path="produk" element={<Produk />} />
+                    <Route path="datatoko" element={<DataToko />} />
+                    <Route path="pesanan" element={<Pesanan />} />
+                    <Route path="keuangan" element={<Keuangan />} />
+                    <Route path="profile" element={<ProfileSeller />} />
+                    <Route path="/" element={<Navigate to="home" />} />
+                  </Routes>
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
 
@@ -127,11 +174,13 @@ const DashboardSeller = () => {
 
           {/* Profile Popup */}
           {shouldShowPopup && (
-            <ProfilePopup
-              onUpdateAddress={updateAddressData}
-              onUpdateShop={updateShopData}
-              onClose={handleClosePopup}
-            />
+            <Suspense fallback={<LoadingSpinner />}>
+              <ProfilePopup
+                onUpdateAddress={updateAddressData}
+                onUpdateShop={updateShopData}
+                onClose={handleClosePopup}
+              />
+            </Suspense>
           )}
         </div>
       </UserContext.Provider>

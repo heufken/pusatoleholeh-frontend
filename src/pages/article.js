@@ -27,21 +27,21 @@ const Article = () => {
   const relatedArticles = [
     {
       title: 'Brownies Inovasi Terbaru',
-      image: 'https://via.placeholder.com/300x200',
+      image: '/produk 1.webp',
       description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
       date: '2024-01-15',
       tags: ['Makanan', 'Inovasi'],
     },
     {
       title: 'Kerajinan Tangan Terlaris',
-      image: 'https://via.placeholder.com/300x200',
+      image: '/produk 3.jpg',
       description: 'Nullam quis risus eget urna mollis ornare vel eu leo.',
       date: '2024-01-14',
       tags: ['Kerajinan', 'Trending'],
     },
     {
       title: 'Kini Bisa Bayar Dengan Kartu!',
-      image: 'https://via.placeholder.com/300x200',
+      image: '/produk 4.jpg',
       description: 'Vivamus sagittis lacus vel augue laoreet rutrum faucibus.',
       date: '2024-01-13',
       tags: ['Info', 'Pembayaran'],
@@ -70,7 +70,7 @@ const Article = () => {
         {/* Hero Image */}
         <div className="relative rounded-2xl overflow-hidden shadow-2xl mb-12">
           <img
-            src="https://via.placeholder.com/900x500"
+            src="/bg.webp"
             alt="Kerajinan Tangan"
             className="w-full h-[500px] object-cover"
           />

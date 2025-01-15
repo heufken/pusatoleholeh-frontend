@@ -5,9 +5,10 @@ import { useNavigate } from "react-router-dom";
 import DropdownMenu from "../landing/nav-dropdown";
 import { MagnifyingGlassIcon, UserIcon, ShoppingCartIcon, EnvelopeIcon, BellIcon } from '@heroicons/react/24/outline';
 import useCartCount from "../useCartCount";
+import { toast } from 'react-hot-toast';
 
 function Header() {
-  const { isAuthenticated, logout } = useContext(AuthContext);
+  const { isAuthenticated, user, logout } = useContext(AuthContext);
   const userContext = useContext(UserContext);
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -16,14 +17,36 @@ function Header() {
 
   const userData = userContext ? userContext.userData : null;
 
+  const handleProtectedNavigation = (path) => {
+    if (!isAuthenticated) {
+      toast.error('Silakan login terlebih dahulu');
+      navigate('/login');
+      return;
+    }
+    if (user?.role !== 'buyer' && path !== '/dashboard-seller') {
+      toast.error('Fitur ini hanya tersedia untuk pembeli');
+      return;
+    }
+    navigate(path);
+  };
+
   const handleLoginRedirect = () => navigate("/login");
-  const handleProfileRedirect = () => navigate("/user");
-  const handleDashboardRedirect = () => navigate("/dashboardseller");
+  
+  const handleProfileRedirect = () => {
+    if (user?.role === "buyer") {
+      navigate("/user");
+    } else if (user?.role === "seller") {
+      navigate("/dashboard-seller");
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate("/");
   };
+
   const handleSearchChange = (e) => setSearchQuery(e.target.value);
+  
   const handleSearchSubmit = () => {
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
@@ -36,7 +59,7 @@ function Header() {
       onMouseLeave={() => setIsDropdownOpen(false)}
     >
       {/* Logo Section */}
-      <div  onClick={() => window.location.href = '/'} className="logo flex items-center cursor-pointer">
+      <div onClick={() => navigate('/')} className="logo flex items-center cursor-pointer">
         <img src="/logo.png" alt="Pusat Oleh-Oleh" className="h-10 w-auto mr-2" />
         <span className="font-bold text-lg hidden md:block">Pusat Oleh-Oleh</span>
       </div>
@@ -59,14 +82,20 @@ function Header() {
 
       {/* Icons Section */}
       <div className="flex items-center space-x-6">
-        <button className="text-gray-800 hover:text-gray-600 transition-colors">
+        <button 
+          onClick={() => handleProtectedNavigation('/notifications')}
+          className="text-gray-800 hover:text-gray-600 transition-colors"
+        >
           <BellIcon className="w-5 h-5" />
         </button>
-        <button className="text-gray-800 hover:text-gray-600 transition-colors">
+        <button 
+          onClick={() => handleProtectedNavigation('/messages')}
+          className="text-gray-800 hover:text-gray-600 transition-colors"
+        >
           <EnvelopeIcon className="w-5 h-5" />
         </button>
         <button 
-          onClick={() => window.location.href = '/cart'} 
+          onClick={() => handleProtectedNavigation('/cart')} 
           className="text-gray-800 hover:text-gray-600 transition-colors relative"
         >
           <ShoppingCartIcon className="w-5 h-5" />
@@ -82,20 +111,25 @@ function Header() {
         <div className="user-section flex items-center relative">
           {isAuthenticated ? (
             <div
-              className="relative "
+              className="relative"
               onMouseEnter={() => setIsDropdownOpen(true)}
             >
-              <button
-                className="text-gray-800 font-semibold py-1 px-3 rounded-full transition-colors focus:outline-none"
-              >
-                <UserIcon className="w-5 h-5" />
+              <button className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-all">
+                <div className="w-8 h-8 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] rounded-full flex items-center justify-center">
+                  <span className="text-white font-medium">
+                    {user?.name?.[0] || <UserIcon className="h-5 w-5" />}
+                  </span>
+                </div>
+                <span className="text-gray-700 font-medium">
+                  {user?.name || userData?.name}
+                </span>
               </button>
-              <span className="ml-2 text-gray-800">{userData?.name}</span>
               {isDropdownOpen && (
                 <DropdownMenu
-                  role={userData?.role}
+                  role={user?.role}
                   onProfileClick={handleProfileRedirect}
-                  onDashboardClick={handleDashboardRedirect}
+                  onWishlistClick={() => handleProtectedNavigation('/wishlist')}
+                  onCartClick={() => handleProtectedNavigation('/cart')}
                   onLogoutClick={handleLogout}
                 />
               )}
@@ -103,7 +137,7 @@ function Header() {
           ) : (
             <button
               onClick={handleLoginRedirect}
-              className="border border-gray-800 text-gray-800 font-semibold py-1 px-3 rounded hover:bg-gray-300 transition-colors focus:outline-none"
+              className="bg-[#4F46E5] hover:bg-[#4338CA] text-white font-medium px-6 py-2 rounded-lg transition-colors shadow-lg shadow-indigo-500/20"
             >
               Masuk
             </button>
