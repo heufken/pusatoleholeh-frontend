@@ -2,7 +2,6 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 const DropdownMenu = ({ onProfileClick, onLogoutClick }) => {
-
   const navigate = useNavigate();
 
   return (
@@ -10,7 +9,7 @@ const DropdownMenu = ({ onProfileClick, onLogoutClick }) => {
       <div className="relative">
         <button
           onClick={onProfileClick}
-          className="w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+          className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 hover:text-[#4F46E5] transition-colors"
         >
           Profil
         </button>
@@ -28,7 +27,7 @@ const DropdownMenu = ({ onProfileClick, onLogoutClick }) => {
         </button>
         <button
           onClick={onLogoutClick}
-          className="w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+          className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 hover:text-[#4F46E5] transition-colors"
         >
           Logout
         </button>

@@ -10,18 +10,22 @@ function RelatedProduct({ categoryId, currentProductId }) {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const cdnUrl = process.env.REACT_APP_CDN_BASE_URL;
 
-  const normalizeUrl = useCallback(
-    (url) => {
-      if (!url) return null;
-      const cleanedPath = url
-        .replace(/^.*localhost:\d+\//, "/")
-        .replace(/\\/g, "/");
-      return `${cdnUrl}/${cleanedPath}`
-        .replace(/\/\//g, "/")
-        .replace(":/", "://");
-    },
-    [cdnUrl]
-  );
+  const normalizeUrl = useCallback((url) => {
+    if (!url) return null;
+    const cdnUrl = process.env.REACT_APP_CDN_BASE_URL;
+    
+    try {
+      const urlObj = new URL(url.replace(/\\/g, "/"));
+      const pathname = urlObj.pathname;
+      return new URL(pathname, cdnUrl).toString();
+    } catch (e) {
+      const cleanPath = url
+        .replace(/^(?:https?:)?(?:\/\/)?[^/]+/, '')
+        .replace(/\\/g, "/")
+        .replace(/^\/+/, '/');
+      return `${cdnUrl}${cleanPath}`;
+    }
+  }, []);
 
   const handleProductClick = (productId) => {
     navigate(`/product/${productId}`);
@@ -51,7 +55,7 @@ function RelatedProduct({ categoryId, currentProductId }) {
             .slice(0, 8)
             .map(product => ({
               ...product,
-              productCover: normalizeUrl(product.productCover)
+              productCover: normalizeUrl(product.cover?.url)
             }));
             
           setRelatedProducts(filteredProducts);
@@ -73,8 +77,8 @@ function RelatedProduct({ categoryId, currentProductId }) {
     <div className="related-product-section p-4 border-t border-gray-300">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <div className="w-4 h-8 bg-red-500 rounded mr-2"></div>
-          <h2 className="text-xl font-bold text-red-500">Related Products</h2>
+          <div className="w-4 h-8 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] rounded mr-2"></div>
+          <h2 className="text-xl font-bold text-[#4F46E5]">Related Products</h2>
         </div>
         {relatedProducts.length > productsPerPage && (
           <div className="flex gap-2">
@@ -88,7 +92,7 @@ function RelatedProduct({ categoryId, currentProductId }) {
             </button>
             <button 
               onClick={handleNextPage}
-              className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#8B4513] shadow-md hover:bg-[#6B3410]"
+              className="w-10 h-10 flex items-center justify-center rounded-lg bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] shadow-md hover:opacity-90"
             >
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -109,9 +113,13 @@ function RelatedProduct({ categoryId, currentProductId }) {
                 src={product.productCover} 
                 alt={product.name} 
                 className="w-full h-48 object-cover rounded-lg mb-2"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'path/to/fallback/image.jpg';
+                }}
               />
               <h3 className="font-semibold text-lg mb-1">{product.name}</h3>
-              <p className="text-red-500 font-bold">Rp.{product.price}</p>
+              <p className="text-[#4F46E5] font-bold">Rp.{product.price}</p>
             </div>
           ))
         ) : (

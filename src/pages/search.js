@@ -60,7 +60,7 @@ const Search = () => {
             onClick={() => handleSearchTypeChange("product")}
             className={`px-6 py-2 rounded-l-lg text-sm font-semibold transition-colors duration-200 border ${
               searchType === "product"
-                ? "bg-custom-red text-white"
+                ? "bg-gradient-to-r from-[#4F46E5] to-[#4338CA] text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
             }`}
           >
@@ -70,7 +70,7 @@ const Search = () => {
             onClick={() => handleSearchTypeChange("shop")}
             className={`px-6 py-2 rounded-r-lg text-sm font-semibold transition-colors duration-200 border ${
               searchType === "shop"
-                ? "bg-custom-red text-white"
+                ? "bg-gradient-to-r from-[#4F46E5] to-[#4338CA] text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
             }`}
           >
@@ -82,7 +82,7 @@ const Search = () => {
             <ThreeDots
               height="50"
               width="50"
-              color="#F87171" 
+              color="#4F46E5"
               ariaLabel="three-dots-loading"
               visible={true}
             />
@@ -106,7 +106,7 @@ const Search = () => {
                   <Link
                     to={linkTo}
                     key={index}
-                    className="border p-5 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-200 block"
+                    className="border p-5 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-200 block hover:border-[#4F46E5]"
                   >
                     <div className="relative">
                       {searchType === "product" && result.productCover && (
@@ -117,7 +117,7 @@ const Search = () => {
                         />
                       )}
                       <div className="p-4">
-                        <h3 className="font-semibold text-xl text-gray-800 mb-2">
+                        <h3 className="font-semibold text-xl text-gray-800 mb-2 hover:text-[#4F46E5]">
                           {searchType === "shop" ? shopName : result.name}
                         </h3>
                         <p className="text-gray-600 text-sm">

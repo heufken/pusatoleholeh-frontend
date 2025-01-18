@@ -34,10 +34,21 @@ const Home = () => {
       readyToShip: 0,
       totalSales: 0,
       newChats: 0
+    },
+    analytics: {
+      potentialSales: 0,
+      productViews: 0,
+      productsSold: 0
+    },
+    trends: {
+      sales: -100,
+      views: -100,
+      sold: -100
     }
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [notifications, setNotifications] = useState([]);
   
   const { token } = useContext(AuthContext);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
@@ -47,9 +58,17 @@ const Home = () => {
       setLoading(true);
       setError(null);
 
-      const transactionResponse = await axios.get(`${apiUrl}/transaction/seller`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const [transactionResponse, analyticsResponse, notificationsResponse] = await Promise.all([
+        axios.get(`${apiUrl}/transaction/seller`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${apiUrl}/analytics/shop`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${apiUrl}/notifications`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
 
       const transactionStats = transactionResponse.data.transactionStatuses.reduce((acc, transaction) => {
         switch (transaction.status) {
@@ -69,8 +88,20 @@ const Home = () => {
       }, { newOrders: 0, readyToShip: 0, totalSales: 0, newChats: 0 });
 
       setStats({
-        transactions: transactionStats
+        transactions: transactionStats,
+        analytics: analyticsResponse.data.analytics || {
+          potentialSales: 0,
+          productViews: 0,
+          productsSold: 0
+        },
+        trends: analyticsResponse.data.trends || {
+          sales: -100,
+          views: -100,
+          sold: -100
+        }
       });
+
+      setNotifications(notificationsResponse.data.notifications || []);
     } catch (error) {
       console.error('Error fetching stats:', error);
       setError(error.response?.data?.message || 'Terjadi kesalahan saat mengambil data');
@@ -113,8 +144,8 @@ const Home = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4">
-      <div className="col-span-1">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="col-span-1 md:col-span-3">
         <h1 className="text-2xl font-bold mb-4">Penting Hari Ini</h1>
         <p className="mb-4">Aktivitas Penting Yang Harus Dilakukan</p>
         
@@ -157,28 +188,38 @@ const Home = () => {
         <div className="bg-white shadow rounded-lg p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 divide-x divide-gray-300">
             <div className="p-4">
-              <h3 className="text-lg font-semibold">Total Penjualan</h3>
+              <h3 className="text-lg font-semibold">Potensi Penjualan</h3>
               {loading ? (
                 <div className="h-8 bg-gray-200 animate-pulse rounded mt-2"></div>
               ) : (
                 <>
-                  <p className="text-2xl font-bold">{stats.transactions.totalSales}</p>
-                  <p className="text-gray-500">Total Transaksi Selesai</p>
+                  <p className="text-2xl font-bold">{formatCurrency(stats.analytics.potentialSales)}</p>
+                  <p className="text-red-500">{stats.trends.sales}% Dari Hari Sebelumnya</p>
                 </>
               )}
             </div>
             <div className="p-4">
-              <h3 className="text-lg font-semibold">Pesanan Baru</h3>
+              <h3 className="text-lg font-semibold">Produk Dilihat</h3>
               {loading ? (
                 <div className="h-8 bg-gray-200 animate-pulse rounded mt-2"></div>
               ) : (
                 <>
-                  <p className="text-2xl font-bold">{stats.transactions.newOrders}</p>
-                  <p className="text-gray-500">Menunggu Diproses</p>
+                  <p className="text-2xl font-bold">{stats.analytics.productViews}</p>
+                  <p className="text-red-500">{stats.trends.views}% Dari Hari Sebelumnya</p>
                 </>
               )}
             </div>
-
+            <div className="p-4">
+              <h3 className="text-lg font-semibold">Produk Terjual</h3>
+              {loading ? (
+                <div className="h-8 bg-gray-200 animate-pulse rounded mt-2"></div>
+              ) : (
+                <>
+                  <p className="text-2xl font-bold">{stats.analytics.productsSold}</p>
+                  <p className="text-red-500">{stats.trends.sold}% Dari Hari Sebelumnya</p>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -204,6 +245,34 @@ const Home = () => {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Notifications */}
+      <div className="col-span-1 border-l-2 border-gray-300 pl-4">
+        <div className="bg-white shadow rounded-lg p-4">
+          <h2 className="text-lg font-bold mb-4 flex items-center">
+            <ExclamationTriangleIcon className="w-5 h-5 text-yellow-500 mr-2" />
+            Notifikasi
+          </h2>
+          {loading ? (
+            Array(3).fill(null).map((_, index) => (
+              <div key={index} className="h-12 bg-gray-200 animate-pulse rounded mb-2"></div>
+            ))
+          ) : (
+            notifications && notifications.length > 0 ? (
+              <div className="space-y-4">
+                {notifications.map((notification, index) => (
+                  <div key={index} className="flex items-center p-2 mb-2 hover:bg-gray-50 rounded transition-colors">
+                    <ExclamationTriangleIcon className="w-5 h-5 text-yellow-500 mr-2 flex-shrink-0" />
+                    <p className="text-sm text-gray-700">{notification.message}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">Tidak ada notifikasi baru</p>
+            )
+          )}
         </div>
       </div>
     </div>

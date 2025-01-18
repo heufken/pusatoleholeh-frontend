@@ -11,24 +11,20 @@ import AddProduct from "./pages/dashboardseller/addproduct";
 import Search from "./pages/search";
 import ProductDetail from "./pages/productdetail";
 import Shop from "./pages/shop";
-// import Cart from "./pages/cart";
-// import Checkout from "./pages/checkout";
-import ProtectedRoute from "./components/protectedroute";
 import ArticlePage from "./pages/articlehomepage";
 import Article from "./pages/article";
 import CartPage from "./pages/CartPage";
-import CheckoutPage from "./pages/CheckoutPage";
+import CheckoutPage from "./pages/CheckoutPage.js";
 import Transaction from "./pages/transaction";
 import WishlistPage from "./pages/wishlist";
-
-
+import ProtectedRoute from "./components/protectedroute";
 
 function App() {
   return (
     <Router>
       <div className="bg-white min-h-screen">
         <Routes>
-          {/* Rute terbuka */}
+          {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -38,14 +34,14 @@ function App() {
           <Route path="/product/:productId" element={<ProductDetail />} />
           <Route path="/articlehomepage" element={<ArticlePage />} />
           <Route path="/article" element={<Article />} />
-          <Route path="/cart" element={<CartPage />} />
-          {/* Rute terproteksi */}
+
+          {/* Protected Seller Routes */}
           <Route element={<ProtectedRoute allowedRoles={["seller"]} />}>
             <Route path="/dashboard-seller/*" element={<DashboardSeller />} />
             <Route path="/add-product" element={<AddProduct />} />
           </Route>
 
-          {/* Rute terproteksi */}
+          {/* Protected Buyer Routes */}
           <Route element={<ProtectedRoute allowedRoles={["buyer"]} />}>
             <Route path="/user/*" element={<DashboardBuyer />} />
             <Route path="/cart" element={<CartPage />} />

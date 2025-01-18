@@ -82,7 +82,7 @@ function RegisterPage() {
           <h2 className="text-2xl font-bold mb-4 mt-12">Buat akunmu dulu, yuk?</h2>
           <p className="text-sm text-gray-600 mb-6">
             Sudah punya akun, nih?{" "}
-            <button onClick={handleLoginRedirect} className="text-red-500 font-semibold">
+            <button onClick={handleLoginRedirect} className="text-[#4F46E5] font-bold hover:text-[#4338CA]">
               Masuk aja sekarang!
             </button>
           </p>
@@ -97,7 +97,7 @@ function RegisterPage() {
                 id="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-[#4F46E5] focus:border-[#4F46E5]"
                 placeholder="Masukkan nama"
               />
             </div>
@@ -108,7 +108,7 @@ function RegisterPage() {
                 id="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-[#4F46E5] focus:border-[#4F46E5]"
                 placeholder="Masukkan email"
               />
             </div>
@@ -119,7 +119,7 @@ function RegisterPage() {
                 id="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-[#4F46E5] focus:border-[#4F46E5]"
                 placeholder="Masukkan password"
               />
             </div>
@@ -130,18 +130,20 @@ function RegisterPage() {
                 id="repassword"
                 value={formData.repassword}
                 onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-[#4F46E5] focus:border-[#4F46E5]"
                 placeholder="Masukkan ulang password"
               />
             </div>
 
             <div className="text-right">
-              <button className="text-red-500 text-sm">Lupa password?</button>
+              <button className="text-[#4F46E5] text-sm hover:text-[#4338CA]">
+                Lupa password?
+              </button>
             </div>
 
             <button
               type="submit"
-              className={`w-full bg-red-600 text-white rounded-md py-3 px-4 text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 mt-6 ${
+              className={`w-full bg-gradient-to-r from-[#4F46E5] to-[#4338CA] text-white py-3 rounded-md hover:from-[#4338CA] hover:to-[#3730A3] transition duration-300 font-medium ${
                 loading ? "opacity-50 cursor-not-allowed" : ""
               }`}
               disabled={loading}

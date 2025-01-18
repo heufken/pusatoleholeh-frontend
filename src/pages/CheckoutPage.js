@@ -499,7 +499,7 @@ const CheckoutPage = () => {
               >
                 {selectedPaymentId && paymentMethod?.credit < calculateTotal()
                   ? 'Saldo Tidak Mencukupi'
-                  : 'Bayar Sekarang'}
+                  : 'Pesan Sekarang'}
               </button>
 
               {/* Additional Info */}

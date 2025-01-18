@@ -135,7 +135,7 @@ const ProductDetail = () => {
         categoryId={productData?.categoryId?._id} 
         currentProductId={productData?._id}
       />
-      <ReviewsProduct />
+      <ReviewsProduct productId={productData._id} />
       <Discuss />
       <Footer />
     </div>

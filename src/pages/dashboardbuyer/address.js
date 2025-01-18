@@ -105,7 +105,7 @@ const Address = ({ addressData }) => {
         <h2 className="text-xl font-semibold">Daftar Alamat</h2>
         <button
           onClick={() => handleOpenModal()}
-          className="flex items-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+          className="flex items-center px-4 py-2 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-lg hover:opacity-90 transition-all"
         >
           <FontAwesomeIcon icon={faPlus} className="mr-2" />
           Tambah Alamat
@@ -115,7 +115,7 @@ const Address = ({ addressData }) => {
       {/* Daftar Alamat */}
       <div className="grid gap-4">
         {Array.isArray(addressData) && addressData.map((address) => (
-          <div key={address._id} className="p-4 border rounded-lg shadow-sm">
+          <div key={address._id} className="p-4 border rounded-lg shadow-sm hover:border-[#4F46E5] transition-colors">
             <div className="flex justify-between items-start mb-2">
               <div>
                 <h3 className="font-semibold">{address.name}</h3>
@@ -129,13 +129,13 @@ const Address = ({ addressData }) => {
               <div className="flex space-x-2">
                 <button
                   onClick={() => handleOpenModal(address)}
-                  className="p-2 text-blue-500 hover:text-blue-600"
+                  className="p-2 text-[#4F46E5] hover:opacity-70"
                 >
                   <FontAwesomeIcon icon={faPencilAlt} />
                 </button>
                 <button
                   onClick={() => handleDelete(address._id)}
-                  className="p-2 text-red-500 hover:text-red-600"
+                  className="p-2 text-red-500 hover:opacity-70"
                 >
                   <FontAwesomeIcon icon={faTrash} />
                 </button>
@@ -164,7 +164,7 @@ const Address = ({ addressData }) => {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="w-full p-2 border rounded-lg"
+                    className="w-full p-2 border rounded-lg focus:ring-[#4F46E5] focus:border-[#4F46E5]"
                     required
                   />
                 </div>
@@ -177,7 +177,7 @@ const Address = ({ addressData }) => {
                     name="province"
                     value={formData.province}
                     onChange={handleInputChange}
-                    className="w-full p-2 border rounded-lg"
+                    className="w-full p-2 border rounded-lg focus:ring-[#4F46E5] focus:border-[#4F46E5]"
                     required
                   />
                 </div>
@@ -190,7 +190,7 @@ const Address = ({ addressData }) => {
                     name="city"
                     value={formData.city}
                     onChange={handleInputChange}
-                    className="w-full p-2 border rounded-lg"
+                    className="w-full p-2 border rounded-lg focus:ring-[#4F46E5] focus:border-[#4F46E5]"
                     required
                   />
                 </div>
@@ -203,7 +203,7 @@ const Address = ({ addressData }) => {
                     name="district"
                     value={formData.district}
                     onChange={handleInputChange}
-                    className="w-full p-2 border rounded-lg"
+                    className="w-full p-2 border rounded-lg focus:ring-[#4F46E5] focus:border-[#4F46E5]"
                     required
                   />
                 </div>
@@ -216,7 +216,7 @@ const Address = ({ addressData }) => {
                     name="subdistrict"
                     value={formData.subdistrict}
                     onChange={handleInputChange}
-                    className="w-full p-2 border rounded-lg"
+                    className="w-full p-2 border rounded-lg focus:ring-[#4F46E5] focus:border-[#4F46E5]"
                     required
                   />
                 </div>
@@ -229,7 +229,7 @@ const Address = ({ addressData }) => {
                     name="postalCode"
                     value={formData.postalCode}
                     onChange={handleInputChange}
-                    className="w-full p-2 border rounded-lg"
+                    className="w-full p-2 border rounded-lg focus:ring-[#4F46E5] focus:border-[#4F46E5]"
                     required
                   />
                 </div>
@@ -239,13 +239,13 @@ const Address = ({ addressData }) => {
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                  className="px-4 py-2 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-lg hover:opacity-90 transition-all"
                 >
                   {isEditing ? 'Simpan Perubahan' : 'Tambah Alamat'}
                 </button>

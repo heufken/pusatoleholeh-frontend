@@ -7,22 +7,36 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 
 const Hero = () => {
+  const cdnUrl = process.env.REACT_APP_CDN_BASE_URL;
+  
   const slides = [
     {
       title: "Kerajinan Tangan Tradisional",
       subtitle: "Karya Terbaik dari Pengrajin Lokal",
       description: "Temukan koleksi kerajinan tangan berkualitas tinggi yang dibuat dengan cinta oleh para pengrajin lokal terbaik.",
-      image: "https://dummyimage.com/1200x600/ddd/000.png&text=Slide+1",
+      path: "images/hero/banner-2285ec205f12a5391e4153478b769174016cd703c4700a889ac1568976cfc334.webp",
       cta: "Jelajahi Koleksi",
     },
     {
       title: "Oleh-oleh Khas Daerah",
       subtitle: "Cita Rasa Nusantara",
       description: "Nikmati berbagai pilihan oleh-oleh khas dari berbagai daerah di Indonesia, langsung dari produsen terpercaya.",
-      image: "https://dummyimage.com/1200x600/ddd/000.png&text=Slide+2",
+      path: "images/hero/banner-fbaf080737f0a967f84e5c5e0b2bad1897ab157e3b71d3942632cd08ad233b80.webp",
       cta: "Lihat Produk",
     },
   ];
+
+  const normalizeUrl = (path) => {
+    if (!path) return null;
+    
+    try {
+      const cleanPath = path.replace(/^\/+/, '');
+      return `${cdnUrl}/${cleanPath}`;
+    } catch (e) {
+      console.error('Error normalizing URL:', e);
+      return null;
+    }
+  };
 
   return (
     <section id="hero" className="relative bg-gray-50">
@@ -51,9 +65,13 @@ const Hero = () => {
                   <div className="absolute inset-0">
                     <div className="absolute inset-0 bg-gradient-to-r from-gray-900/95 via-gray-900/80 to-transparent z-10" />
                     <img
-                      src={slide.image}
+                      src={normalizeUrl(slide.path)}
                       alt={slide.title}
                       className="w-full h-full object-cover transform scale-105 transition-transform duration-[2000ms] group-hover:scale-100"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '/placeholder-banner.jpg';
+                      }}
                     />
                   </div>
 

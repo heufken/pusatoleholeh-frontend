@@ -202,7 +202,8 @@ const Produk = () => {
   };
 
   const openEditModal = (product) => {
-    setEditProduct({ ...product, cover: product.productCover });
+    setEditProduct({ ...product });
+    setSelectedCategory(product.categoryId?._id || '');
     setProductImages(product.productImages || []);
     setEditModalTab("details");
     setIsModalOpen(true);
@@ -219,7 +220,11 @@ const Produk = () => {
     const toastId = toast.loading("Menyimpan perubahan...");
 
     try {
-      // Kirim permintaan update ke server
+      if (!selectedCategory) {
+        toast.error("Kategori harus dipilih", { id: toastId });
+        return;
+      }
+
       const response = await axios.put(
         `${apiUrl}/product/update/${updatedProduct._id}`,
         {
@@ -227,30 +232,25 @@ const Produk = () => {
           description: updatedProduct.description,
           price: updatedProduct.price,
           stock: updatedProduct.stock,
-          categoryId: updatedProduct.categoryId,
+          categoryId: selectedCategory
         },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-      // Perbarui state produk dengan data baru dari server
       setProducts((prevProducts) =>
         prevProducts.map((product) =>
           product._id === updatedProduct._id ? response.data : product
         )
       );
 
-      // Segarkan daftar produk
       await fetchProducts();
-
       toast.success("Produk berhasil diperbarui!", { id: toastId });
       closeEditModal();
     } catch (err) {
       toast.error(
-        `Gagal memperbarui produk: ${
-          err.response?.data?.message || err.message
-        }`,
+        `Gagal memperbarui produk: ${err.response?.data?.message || err.message}`,
         { id: toastId }
       );
     }
@@ -709,10 +709,8 @@ const Produk = () => {
                     Kategori
                   </label>
                   <select
-                    id="category"
                     value={selectedCategory}
                     onChange={handleCategoryChange}
-                    required
                     className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
                   >
                     <option value="">Pilih Kategori</option>

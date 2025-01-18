@@ -74,7 +74,7 @@ function AuthPage() {
           </h2>
           <p className="text-sm text-gray-600 mb-6">
             Belum punya akun?{" "}
-            <button onClick={openModal} className="text-red-500 font-bold">
+            <button onClick={openModal} className="text-[#4F46E5] font-bold hover:text-[#4338CA]">
               Daftar sekarang!
             </button>
           </p>
@@ -89,7 +89,7 @@ function AuthPage() {
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-[#4F46E5] focus:border-[#4F46E5]"
                 placeholder="Masukkan email"
               />
             </div>
@@ -102,7 +102,7 @@ function AuthPage() {
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-[#4F46E5] focus:border-[#4F46E5]"
                 placeholder="Masukkan password"
               />
             </div>
@@ -110,16 +110,14 @@ function AuthPage() {
             {error && <p className="text-red-500 text-sm">{error}</p>}
 
             <div className="text-right">
-              <button
-                className="text-red-500 text-sm"
-              >
+              <button className="text-[#4F46E5] text-sm hover:text-[#4338CA]">
                 Lupa password?
               </button>
             </div>
 
             <button
               type="submit"
-              className="w-full bg-red-600 text-white py-3 rounded-md hover:bg-red-700 transition duration-300 font-medium"
+              className="w-full bg-gradient-to-r from-[#4F46E5] to-[#4338CA] text-white py-3 rounded-md hover:from-[#4338CA] hover:to-[#3730A3] transition duration-300 font-medium"
             >
               Masuk
             </button>
@@ -147,7 +145,9 @@ function AuthPage() {
           <button
             onClick={() => setSelectedRole("user")}
             className={`px-4 py-2 rounded-md transition w-full ${
-              selectedRole === "user" ? "bg-red-600 text-white" : "bg-gray-200 text-gray-700"
+              selectedRole === "user" 
+                ? "bg-gradient-to-r from-[#4F46E5] to-[#4338CA] text-white" 
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
             }`}
           >
             User
@@ -155,7 +155,9 @@ function AuthPage() {
           <button
             onClick={() => setSelectedRole("seller")}
             className={`px-4 py-2 rounded-md transition w-full ${
-              selectedRole === "seller" ? "bg-red-600 text-white" : "bg-gray-200 text-gray-700"
+              selectedRole === "seller" 
+                ? "bg-gradient-to-r from-[#4F46E5] to-[#4338CA] text-white" 
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
             }`}
           >
             Seller
@@ -164,7 +166,7 @@ function AuthPage() {
 
         <button
           onClick={handleSubmit}
-          className="w-full bg-red-600 text-white py-3 rounded-md hover:bg-red-700 transition duration-300 font-medium"
+          className="w-full bg-gradient-to-r from-[#4F46E5] to-[#4338CA] text-white py-3 rounded-md hover:from-[#4338CA] hover:to-[#3730A3] transition duration-300 font-medium"
         >
           Lanjut
         </button>

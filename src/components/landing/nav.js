@@ -1,13 +1,6 @@
-import React, {
-  useContext,
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-} from "react";
+import React, { useContext, useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-// import DropdownMenu from "./nav-dropdown";
 import {
   UserIcon,
   BellIcon,
@@ -16,6 +9,7 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import useCartCount from "../useCartCount";
+import { toast } from 'react-hot-toast';
 
 function Nav() {
   const navigate = useNavigate();
@@ -28,10 +22,23 @@ function Nav() {
   const timeoutRef = useRef(null);
   const cartCount = useCartCount();
 
+  const handleProtectedNavigation = (path) => {
+    if (!isAuthenticated) {
+      toast.error('Silakan login terlebih dahulu');
+      navigate('/login');
+      return;
+    }
+    if (user?.role !== 'buyer') {
+      toast.error('Fitur ini hanya tersedia untuk pembeli');
+      return;
+    }
+    navigate(path);
+  };
+
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      const navHeight = 80; // Approximate height of the nav bar
+      const navHeight = 80;
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - navHeight;
 
@@ -64,10 +71,8 @@ function Nav() {
   const controlNavbar = useCallback(() => {
     if (typeof window !== "undefined") {
       if (window.scrollY > lastScrollY) {
-        // scroll down
         setShowNav(false);
       } else {
-        // scroll up
         setShowNav(true);
       }
       setLastScrollY(window.scrollY);
@@ -84,7 +89,7 @@ function Nav() {
   const handleDropdownClose = () => {
     timeoutRef.current = setTimeout(() => {
       setIsDropdownOpen(false);
-    }, 300); // 300ms delay before closing
+    }, 300);
   };
 
   useEffect(() => {
@@ -106,8 +111,6 @@ function Nav() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       window.addEventListener("scroll", controlNavbar);
-
-      // Cleanup function
       return () => {
         window.removeEventListener("scroll", controlNavbar);
       };
@@ -125,7 +128,7 @@ function Nav() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-8">
               <div
-                onClick={() => (window.location.href = "/")}
+                onClick={() => navigate("/")}
                 className="flex items-center space-x-3 cursor-pointer"
               >
                 <div className="">
@@ -186,7 +189,7 @@ function Nav() {
                   <EnvelopeIcon className="h-6 w-6" />
                 </button>
                 <button
-                  onClick={() => navigate("/cart")}
+                  onClick={() => handleProtectedNavigation("/cart")}
                   className="p-2 text-gray-600 hover:text-[#4F46E5] hover:bg-gray-100 rounded-lg transition-all relative"
                 >
                   <ShoppingCartIcon className="h-6 w-6" />
@@ -226,12 +229,22 @@ function Nav() {
                         >
                           Profil Saya
                         </button>
-                        <button
-                          onClick={() => navigate("/transaction")}
-                          className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 hover:text-[#4F46E5] transition-colors"
-                        >
-                          Pembelian
-                        </button>
+                        {user?.role === "buyer" && (
+                          <>
+                            <button
+                              onClick={() => handleProtectedNavigation("/transaction")}
+                              className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 hover:text-[#4F46E5] transition-colors"
+                            >
+                              Pembelian
+                            </button>
+                            <button
+                              onClick={() => handleProtectedNavigation("/wishlist")}
+                              className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 hover:text-[#4F46E5] transition-colors"
+                            >
+                              Wishlist
+                            </button>
+                          </>
+                        )}
                         <button
                           onClick={logout}
                           className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 hover:text-[#4F46E5] transition-colors"
