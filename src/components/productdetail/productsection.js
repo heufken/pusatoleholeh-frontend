@@ -21,14 +21,49 @@ import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
 
+const StarRating = ({ rating }) => {
+  return (
+    <div className="flex items-center">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <span
+          key={star}
+          className={`text-lg ${
+            star <= rating ? 'text-yellow-500' : 'text-gray-300'
+          }`}
+        >
+          ★
+        </span>
+      ))}
+    </div>
+  );
+};
+
 function ProductSection({ productData, onAddToCart }) {
   const [quantity, setQuantity] = useState(1);
   const [liked, setLiked] = useState(false);
   const [selectedImage, setSelectedImage] = useState(productData.productCover);
   const [isLoading, setIsLoading] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
   const navigate = useNavigate();
   const { isAuthenticated, user, token } = useContext(AuthContext);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
+
+  useEffect(() => {
+    const fetchRating = async () => {
+      try {
+        const response = await axios.get(`${apiUrl}/review/product/${productData._id}`);
+        setRating(response.data.averageRating || 0);
+        setReviewCount(response.data.totalReviews || 0);
+      } catch (error) {
+        console.error('Error fetching rating:', error);
+        setRating(0);
+        setReviewCount(0);
+      }
+    };
+
+    fetchRating();
+  }, [productData._id, apiUrl]);
 
   // Check if product is in wishlist
   useEffect(() => {
@@ -36,12 +71,21 @@ function ProductSection({ productData, onAddToCart }) {
       if (!isAuthenticated || user?.role !== "buyer") return;
       
       try {
-        const response = await axios.get(`${apiUrl}/wishlist/check/${productData._id}`, {
+        const response = await axios.get(`${apiUrl}/wishlist`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setLiked(response.data.isInWishlist);
+        
+        // Cek apakah produk ada di wishlist
+        const isProductInWishlist = Object.values(response.data.shopProductsX)
+          .flat()
+          .some(item => item.productId === productData._id);
+        
+        setLiked(isProductInWishlist);
       } catch (error) {
-        console.error("Error checking wishlist:", error);
+        if (error.response?.status !== 404) { // Ignore 404 (empty wishlist)
+          console.error("Error checking wishlist:", error);
+        }
+        setLiked(false);
       }
     };
 
@@ -89,7 +133,7 @@ function ProductSection({ productData, onAddToCart }) {
     navigate("/cart");
   };
 
-  const handleWishlist = async () => {
+  const addToWishlist = async () => {
     if (!isAuthenticated) {
       toast.error("Silakan login terlebih dahulu");
       navigate("/login");
@@ -103,48 +147,55 @@ function ProductSection({ productData, onAddToCart }) {
 
     setIsLoading(true);
     try {
-      const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
-      console.log('Attempting wishlist operation with:', {
-        productId: productData._id,
-        token,
-        isLiked: liked
+      await axios.post(`${apiUrl}/wishlist/${productData._id}`, {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
-
-      if (liked) {
-        const response = await axios.delete(`${baseUrl}/api/wishlist/${productData._id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        console.log('Wishlist remove response:', response.data);
-        if (response.data.success) {
-          setLiked(false);
-          toast.success("Berhasil menghapus dari wishlist");
-        }
-      } else {
-        const response = await axios.post(`${baseUrl}/api/wishlist/${productData._id}`, {}, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        console.log('Wishlist add response:', response.data);
-        if (response.data.success) {
-          setLiked(true);
-          toast.success("Berhasil menambahkan ke wishlist");
-        }
-      }
+      setLiked(true);
+      toast.success("Produk ditambahkan ke wishlist");
     } catch (error) {
-      console.error('Wishlist operation error:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status
+      if (error.response?.data?.message?.includes("already in wishlist")) {
+        toast.error("Produk sudah ada di wishlist");
+        setLiked(true);
+      } else {
+        toast.error(error.response?.data?.message || "Gagal menambahkan ke wishlist");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const removeFromWishlist = async () => {
+    if (!isAuthenticated) {
+      toast.error("Silakan login terlebih dahulu");
+      navigate("/login");
+      return;
+    }
+
+    if (user?.role !== "buyer") {
+      toast.error("Hanya pembeli yang dapat menghapus dari wishlist");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await axios.delete(`${apiUrl}/wishlist/${productData._id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
-      
-      const errorMessage = error.response?.data?.message || 
-        (liked ? "Gagal menghapus dari wishlist" : "Gagal menambahkan ke wishlist");
-      toast.error(errorMessage);
+      setLiked(false);
+      toast.success("Produk dihapus dari wishlist");
+    } catch (error) {
+      if (error.response?.data?.message?.includes("not found in wishlist")) {
+        toast.error("Produk tidak ditemukan di wishlist");
+        setLiked(false);
+      } else {
+        toast.error(error.response?.data?.message || "Gagal menghapus dari wishlist");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -169,7 +220,7 @@ function ProductSection({ productData, onAddToCart }) {
   };
 
   return (
-    <div className="product-section p-4 border-b border-gray-300">
+    <div className="product-section p-4 border-b border-gray-300 bg-gradient-to-br from-[#4F46E5]/5 to-[#7C3AED]/5">
       <style>
         {`
           .swiper-pagination-bullet {
@@ -177,11 +228,11 @@ function ProductSection({ productData, onAddToCart }) {
             opacity: 1;
           }
           .swiper-pagination-bullet-active {
-            background-color: #ef4444;
+            background-color: #4F46E5;
           }
           .swiper-button-next,
           .swiper-button-prev {
-            color: #ef4444;
+            color: #4F46E5;
           }
         `}
       </style>
@@ -222,8 +273,8 @@ function ProductSection({ productData, onAddToCart }) {
             alt={productData.name}
             className={`w-full h-24 object-cover rounded-lg cursor-pointer transition-all ${
               selectedImage === productData.productCover
-                ? "border-2 border-red-500"
-                : "border-2 border-transparent hover:border-gray-300"
+                ? "border-2 border-[#4F46E5] shadow-md"
+                : "border-2 border-transparent hover:border-[#4F46E5]/30 hover:shadow-sm"
             }`}
             onClick={() => setSelectedImage(productData.productCover)}
           />
@@ -234,8 +285,8 @@ function ProductSection({ productData, onAddToCart }) {
               alt={`${productData.name} view ${index + 1}`}
               className={`w-full h-24 object-cover rounded-lg cursor-pointer transition-all ${
                 selectedImage === img
-                  ? "border-2 border-red-500"
-                  : "border-2 border-transparent hover:border-gray-300"
+                  ? "border-2 border-[#4F46E5] shadow-md"
+                  : "border-2 border-transparent hover:border-[#4F46E5]/30 hover:shadow-sm"
               }`}
               onClick={() => setSelectedImage(img)}
             />
@@ -253,15 +304,15 @@ function ProductSection({ productData, onAddToCart }) {
           <h1 className="text-2xl font-bold mb-2">{productData.name}</h1>
           <div className="product-reviews flex items-center text-yellow-500 mb-2">
             <div className="flex items-center">
-              <span className="mr-1">⭐</span>
-              <span className="text-gray-700">
-                {productData.rating || "4.5"} ({productData.reviews} Ulasan)
+              <StarRating rating={rating} />
+              <span className="text-gray-700 ml-2">
+                {rating.toFixed(1)} ({reviewCount} Ulasan)
               </span>
             </div>
             <span className="mx-2">|</span>
             <span
               className={`${
-                productData.stock > 0 ? "text-green-600" : "text-red-600"
+                productData.stock > 0 ? "text-[#4F46E5]" : "text-red-600"
               }`}
             >
               {productData.stock > 0
@@ -269,7 +320,7 @@ function ProductSection({ productData, onAddToCart }) {
                 : "Stok Habis"}
             </span>
           </div>
-          <div className="product-price text-2xl font-bold text-red-600 mb-4">
+          <div className="product-price text-2xl font-bold text-[#4F46E5] mb-4">
             Rp {productData.price.toLocaleString("id-ID")}
           </div>
 
@@ -290,7 +341,7 @@ function ProductSection({ productData, onAddToCart }) {
               <div className="quantity-selector flex items-center border border-gray-300 rounded-lg mb-4 w-36 overflow-hidden">
                 <button
                   onClick={() => handleQuantityChange(-1)}
-                  className="p-2 hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 bg-white hover:bg-[#4F46E5] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={quantity <= 1}
                 >
                   -
@@ -305,7 +356,7 @@ function ProductSection({ productData, onAddToCart }) {
                 />
                 <button
                   onClick={() => handleQuantityChange(1)}
-                  className="p-2 hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 bg-white hover:bg-[#4F46E5] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={quantity >= productData.stock}
                 >
                   +
@@ -315,7 +366,7 @@ function ProductSection({ productData, onAddToCart }) {
               <div className="flex gap-2 flex-wrap">
                 <button
                   onClick={handleAddToCart}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={productData.stock === 0}
                 >
                   <FontAwesomeIcon icon={faShoppingCart} />
@@ -324,7 +375,7 @@ function ProductSection({ productData, onAddToCart }) {
 
                 <button
                   onClick={handleBuyNow}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-lg hover:opacity-90 transition-all"
                   disabled={productData.stock === 0}
                 >
                   Beli Sekarang
@@ -334,26 +385,49 @@ function ProductSection({ productData, onAddToCart }) {
           )}
 
           <div className="flex justify-start space-x-6 mb-6">
-            <button
-              onClick={handleWishlist}
-              className="flex items-center text-gray-700 hover:text-red-500 transition-colors"
-            >
-              <FontAwesomeIcon
-                icon={liked ? faHeartSolid : faHeartRegular}
-                className={`text-xl ${liked ? "text-red-500" : ""}`}
-              />
-              <span className="ml-2 text-sm">Wishlist</span>
-            </button>
+            {liked ? (
+              <button
+                onClick={removeFromWishlist}
+                disabled={isLoading}
+                className={`flex items-center gap-2 text-[#4F46E5] hover:text-red-500 transition-colors ${
+                  isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                <FontAwesomeIcon
+                  icon={faHeartSolid}
+                  className="text-xl transition-colors"
+                />
+                <span className="ml-2 text-sm">
+                  {isLoading ? 'Memproses...' : 'Wishlist'}
+                </span>
+              </button>
+            ) : (
+              <button
+                onClick={addToWishlist}
+                disabled={isLoading}
+                className={`flex items-center gap-2 text-gray-700 hover:text-[#4F46E5] transition-colors ${
+                  isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                <FontAwesomeIcon
+                  icon={faHeartRegular}
+                  className="text-xl transition-colors"
+                />
+                <span className="ml-2 text-sm">
+                  {isLoading ? 'Memproses...' : 'Wishlist'}
+                </span>
+              </button>
+            )}
             <button
               onClick={() => navigate(`/product/${productData._id}#discussion`)}
-              className="flex items-center text-gray-700 hover:text-blue-500 transition-colors"
+              className="flex items-center text-gray-700 hover:text-[#4F46E5] transition-colors"
             >
               <FontAwesomeIcon icon={faComment} className="text-xl" />
               <span className="ml-2 text-sm">Diskusi</span>
             </button>
             <button
               onClick={handleShare}
-              className="flex items-center text-gray-700 hover:text-green-500 transition-colors"
+              className="flex items-center text-gray-700 hover:text-[#4F46E5] transition-colors"
             >
               <FontAwesomeIcon icon={faShareSquare} className="text-xl" />
               <span className="ml-2 text-sm">Bagikan</span>
@@ -362,10 +436,10 @@ function ProductSection({ productData, onAddToCart }) {
 
           {/* Shop Info */}
           <div className="shop-info mb-6">
-            <div className="border border-gray-300 p-4 rounded-lg">
+            <div className="border border-gray-300 bg-white p-4 rounded-lg">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center text-white">
+                  <div className="w-12 h-12 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] rounded-full flex items-center justify-center text-white">
                     {productData.shopImage ? (
                       <img
                         src={productData.shopImage}
@@ -393,7 +467,7 @@ function ProductSection({ productData, onAddToCart }) {
                 </div>
                 <button
                   onClick={() => navigate(`/shop/${productData.shopId.username}`)}
-                  className="px-4 py-2 border-2 border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors font-medium"
+                  className="px-4 py-2 border-2 border-[#4F46E5] text-[#4F46E5] rounded-lg hover:bg-gradient-to-r hover:from-[#4F46E5] hover:to-[#7C3AED] hover:text-white transition-all font-medium"
                 >
                   Kunjungi Toko
                 </button>
@@ -403,12 +477,12 @@ function ProductSection({ productData, onAddToCart }) {
 
           {/* Shipping Info */}
           <div className="shipping-info">
-            <div className="border border-gray-300 rounded-lg divide-y divide-gray-300">
+            <div className="border border-gray-300 bg-white rounded-lg divide-y divide-gray-300">
               <div className="p-4">
                 <div className="flex items-center">
                   <FontAwesomeIcon
                     icon={faTruckFast}
-                    className="text-2xl text-red-500 mr-3"
+                    className="text-2xl text-[#4F46E5] mr-3"
                   />
                   <div>
                     <p className="font-bold text-gray-900">Pengiriman Gratis</p>
@@ -422,12 +496,12 @@ function ProductSection({ productData, onAddToCart }) {
                 <div className="flex items-center">
                   <FontAwesomeIcon
                     icon={faRotate}
-                    className="text-2xl text-red-500 mr-3"
+                    className="text-2xl text-[#4F46E5] mr-3"
                   />
                   <div>
                     <p className="font-bold text-gray-900">Pengembalian Gratis</p>
                     <p className="text-sm text-gray-600">
-                      30 Hari Garansi Pengembalian
+                      Pengembalian gratis dalam 7 hari
                     </p>
                   </div>
                 </div>

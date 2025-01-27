@@ -56,7 +56,7 @@ const ArticlePage = () => {
   }, []);
 
   return (
-    <div className="font-sans bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-[#4F46E5]/20 to-[#7C3AED]/5 font-sans">
       <Header />
       <Breadcrumb />
       
@@ -148,7 +148,7 @@ const ArticlePage = () => {
 
       {/* Filter Section */}
       <div className="container mx-auto px-4 mb-12">
-        <div className="bg-white p-8 rounded-2xl shadow-xl relative overflow-hidden">
+        <div className="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-xl relative overflow-hidden border border-[#4F46E5]/20">
           <div className="absolute -z-10 top-0 right-0 w-96 h-96 bg-[#4F46E5]/5 rounded-full blur-3xl"></div>
           
           <div className="flex flex-wrap gap-4 mb-8">
@@ -187,7 +187,7 @@ const ArticlePage = () => {
       <div className="container mx-auto px-4 pb-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[...Array(6)].map((_, index) => (
-            <div key={index} className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
+            <div key={index} className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 hover:-translate-y-1 border border-[#4F46E5]/20">
               <div className="relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 z-10"></div>
                 <img

@@ -5,31 +5,32 @@ const DropdownMenu = ({ onProfileClick, onLogoutClick }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded shadow-lg z-50">
-      <div className="relative">
+    <div className="absolute right-0 mt-2 w-56 origin-top-right bg-white border border-gray-100 rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none transform opacity-100 scale-100 transition ease-out duration-200">
+      <div className="py-1">
         <button
           onClick={onProfileClick}
-          className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 hover:text-[#4F46E5] transition-colors"
+          className="group flex w-full items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#4F46E5] transition-all"
         >
-          Profil
+          <span className="flex-grow text-left font-medium">Profil Saya</span>
         </button>
         <button
           onClick={() => navigate("/transaction")}
-          className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 hover:text-[#4F46E5] transition-colors"
+          className="group flex w-full items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#4F46E5] transition-all"
         >
-          Pembelian
+          <span className="flex-grow text-left font-medium">Pembelian</span>
         </button>
         <button
           onClick={() => navigate("/wishlist")}
-          className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 hover:text-[#4F46E5] transition-colors"
+          className="group flex w-full items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#4F46E5] transition-all"
         >
-          Wishlist
+          <span className="flex-grow text-left font-medium">Wishlist</span>
         </button>
+        <div className="border-t border-gray-100 my-1"></div>
         <button
           onClick={onLogoutClick}
-          className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 hover:text-[#4F46E5] transition-colors"
+          className="group flex w-full items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-all"
         >
-          Logout
+          <span className="flex-grow text-left font-medium">Keluar</span>
         </button>
       </div>
     </div>

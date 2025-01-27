@@ -225,21 +225,21 @@ const Discuss = () => {
 
       {/* Form diskusi baru - hanya untuk buyer */}
       {isAuthenticated && isBuyer && (
-        <form onSubmit={handleNewDiscussion} className="mb-8 bg-white p-4 rounded-lg shadow-md border-2 border-blue-100">
+        <form onSubmit={handleNewDiscussion} className="mb-8 bg-white p-4 rounded-lg shadow-md border-2 border-[#4F46E5]/20">
           <h3 className="text-lg font-semibold mb-3 text-gray-800">Mulai Diskusi Baru</h3>
           <div className="flex flex-col space-y-3">
             <textarea
               value={newDiscussion}
               onChange={(e) => setNewDiscussion(e.target.value)}
               placeholder="Apa yang ingin Anda tanyakan tentang produk ini?"
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#4F46E5] focus:border-[#4F46E5] bg-white"
               rows="3"
               disabled={isLoading}
             />
             <button
               type="submit"
               disabled={isLoading}
-              className={`self-end px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium ${
+              className={`self-end px-6 py-2 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-lg hover:opacity-90 transition-all font-medium ${
                 isLoading ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >
@@ -331,7 +331,7 @@ const Discuss = () => {
                         </button>
                         <button
                           onClick={() => handleEdit(mainDiscussion._id)}
-                          className={`px-4 py-1.5 bg-green-500 text-white rounded hover:bg-green-600 font-medium ${
+                          className={`px-4 py-1.5 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded hover:opacity-90 transition-all font-medium ${
                             isLoading ? 'opacity-50 cursor-not-allowed' : ''
                           }`}
                           disabled={isLoading}
@@ -411,7 +411,7 @@ const Discuss = () => {
                                 </button>
                                 <button
                                   onClick={() => handleEdit(reply._id)}
-                                  className={`px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm font-medium ${
+                                  className={`px-3 py-1 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded hover:opacity-90 transition-all font-medium ${
                                     isLoading ? 'opacity-50 cursor-not-allowed' : ''
                                   }`}
                                   disabled={isLoading}
@@ -437,21 +437,19 @@ const Discuss = () => {
                         value={replyMessages[mainDiscussion._id] || ''}
                         onChange={(e) => handleReplyChange(mainDiscussion._id, e.target.value)}
                         placeholder="Tulis balasan Anda di sini..."
-                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
+                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-[#4F46E5] focus:border-[#4F46E5] bg-white"
                         rows="2"
                         disabled={isLoading}
                       />
-                      <div className="flex justify-end">
-                        <button
-                          type="submit"
-                          disabled={isLoading}
-                          className={`px-4 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium ${
-                            isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                          }`}
-                        >
-                          Balas
-                        </button>
-                      </div>
+                      <button
+                        type="submit"
+                        disabled={isLoading}
+                        className={`px-4 py-1.5 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-lg hover:opacity-90 transition-all text-sm font-medium ${
+                          isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                      >
+                        Balas
+                      </button>
                     </form>
                   </div>
                 )}

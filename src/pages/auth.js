@@ -61,8 +61,8 @@ function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-      <div className="w-full max-w-4xl bg-white shadow-lg rounded-lg lg:flex lg:gap-x-6 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#4F46E5]/20 to-[#7C3AED]/5 flex items-center justify-center px-4">
+      <div className="w-full max-w-4xl bg-white/80 backdrop-blur-sm shadow-lg rounded-lg lg:flex lg:gap-x-6 overflow-hidden">
         <div className="w-full lg:w-1/2 p-8 relative">
           <div className="absolute top-0 left-0 m-4 flex items-center">
             <img src="/logo.png" alt="PusatOlehOleh Logo" className="h-8 w-8 mr-2" />
@@ -74,7 +74,7 @@ function AuthPage() {
           </h2>
           <p className="text-sm text-gray-600 mb-6">
             Belum punya akun?{" "}
-            <button onClick={openModal} className="text-red-500 font-bold">
+            <button onClick={openModal} className="text-[#4F46E5] font-bold hover:text-[#4338CA]">
               Daftar sekarang!
             </button>
           </p>
@@ -89,7 +89,7 @@ function AuthPage() {
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-[#4F46E5] focus:border-[#4F46E5]"
                 placeholder="Masukkan email"
               />
             </div>
@@ -102,7 +102,7 @@ function AuthPage() {
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-[#4F46E5] focus:border-[#4F46E5]"
                 placeholder="Masukkan password"
               />
             </div>
@@ -110,23 +110,21 @@ function AuthPage() {
             {error && <p className="text-red-500 text-sm">{error}</p>}
 
             <div className="text-right">
-              <button
-                className="text-red-500 text-sm"
-              >
+              <button className="text-[#4F46E5] text-sm hover:text-[#4338CA]">
                 Lupa password?
               </button>
             </div>
 
             <button
               type="submit"
-              className="w-full bg-red-600 text-white py-3 rounded-md hover:bg-red-700 transition duration-300 font-medium"
+              className="w-full py-3 px-4 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white font-medium rounded-lg shadow-lg shadow-indigo-500/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
             >
               Masuk
             </button>
           </form>
 
           <footer className="mt-8 text-center text-xs text-gray-500">
-            <p>© 2024 PusatOlehOleh. All Rights Reserved</p>
+            <p> 2024 PusatOlehOleh. All Rights Reserved</p>
           </footer>
         </div>
 
@@ -139,23 +137,27 @@ function AuthPage() {
         isOpen={modalIsOpen}
         onRequestClose={closeModal}
         contentLabel="Pilih Tipe Akun"
-        className="modal bg-white p-8 rounded-lg shadow-lg max-w-md w-80 mx-auto flex flex-col items-center justify-center"
+        className="modal bg-white/80 backdrop-blur-sm p-8 rounded-lg shadow-lg max-w-md w-80 mx-auto flex flex-col items-center justify-center"
         overlayClassName="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
       >
         <h2 className="text-lg font-bold mb-4 text-center">Mau daftar sebagai apa?</h2>
         <div className="flex flex-col space-y-4 mb-6 w-full">
           <button
             onClick={() => setSelectedRole("user")}
-            className={`px-4 py-2 rounded-md transition w-full ${
-              selectedRole === "user" ? "bg-red-600 text-white" : "bg-gray-200 text-gray-700"
+            className={`px-4 py-3 rounded-lg transition-all duration-300 w-full ${
+              selectedRole === "user"
+                ? "bg-indigo-50 border-2 border-[#4F46E5] text-[#4F46E5] font-medium shadow-sm"
+                : "bg-white/80 border-2 border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
             }`}
           >
             User
           </button>
           <button
             onClick={() => setSelectedRole("seller")}
-            className={`px-4 py-2 rounded-md transition w-full ${
-              selectedRole === "seller" ? "bg-red-600 text-white" : "bg-gray-200 text-gray-700"
+            className={`px-4 py-3 rounded-lg transition-all duration-300 w-full ${
+              selectedRole === "seller"
+                ? "bg-indigo-50 border-2 border-[#4F46E5] text-[#4F46E5] font-medium shadow-sm"
+                : "bg-white/80 border-2 border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
             }`}
           >
             Seller
@@ -164,7 +166,7 @@ function AuthPage() {
 
         <button
           onClick={handleSubmit}
-          className="w-full bg-red-600 text-white py-3 rounded-md hover:bg-red-700 transition duration-300 font-medium"
+          className="w-full py-3 px-4 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white font-medium rounded-lg shadow-lg shadow-indigo-500/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
         >
           Lanjut
         </button>
