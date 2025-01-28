@@ -5,7 +5,7 @@ const DropdownMenu = ({ onProfileClick, onLogoutClick }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="absolute right-0 mt-2 w-56 origin-top-right bg-white border border-gray-100 rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none transform opacity-100 scale-100 transition ease-out duration-200">
+    <div className="absolute right-0 mt-2 w-56 origin-top-right bg-white border border-gray-100 rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none transform opacity-100 scale-100 transition ease-out duration-200 z-[9999]">
       <div className="py-1">
         <button
           onClick={onProfileClick}

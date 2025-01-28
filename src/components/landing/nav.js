@@ -83,6 +83,19 @@ function Nav() {
     }
   }, [lastScrollY]);
 
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    setIsDropdownOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setIsDropdownOpen(false);
+    }, 200);
+  };
+
   const handleDropdownOpen = () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -219,9 +232,13 @@ function Nav() {
                 </button>
 
                 {isAuthenticated ? (
-                  <div ref={dropdownRef} className="relative">
+                  <div 
+                    ref={dropdownRef} 
+                    className="relative"
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                  >
                     <button
-                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                       className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-all"
                     >
                       <div className="w-8 h-8 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] rounded-full flex items-center justify-center">
@@ -333,9 +350,13 @@ function Nav() {
                 </div>
 
                 {isAuthenticated ? (
-                  <div ref={dropdownRef} className="relative">
+                  <div 
+                    ref={dropdownRef} 
+                    className="relative"
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                  >
                     <button
-                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                       className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-all"
                     >
                       <div className="w-8 h-8 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] rounded-full flex items-center justify-center">
