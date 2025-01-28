@@ -50,26 +50,44 @@ const Home = () => {
       setLoading(true);
       setError(null);
 
-      const transactionResponse = await axios.get(`${apiUrl}/transaction/seller`, {
+      const response = await axios.get(`${apiUrl}/transaction/seller`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      const transactionStats = transactionResponse.data.transactionStatuses.reduce((acc, transaction) => {
+      // Transform the response data to match the component's needs
+      const transformedTransactions = response.data.transactions.map(item => ({
+        ...item.transaction,
+        status: item.status.status,
+        totalPrice: item.transaction.totalPrice
+      }));
+
+      // Calculate transaction stats
+      const transactionStats = transformedTransactions.reduce((acc, transaction) => {
         switch (transaction.status) {
           case 'Paid':
             acc.newOrders++;
+            acc.revenue += transaction.totalPrice;
             break;
           case 'Processed':
             acc.readyToShip++;
+            acc.revenue += transaction.totalPrice;
             break;
           case 'Completed':
             acc.totalSales++;
+            acc.revenue += transaction.totalPrice;
             break;
           default:
             break;
         }
         return acc;
-      }, { newOrders: 0, readyToShip: 0, totalSales: 0, newChats: 0 });
+      }, { 
+        newOrders: 0, 
+        readyToShip: 0, 
+        totalSales: 0, 
+        revenue: 0,
+        newChats: 0,
+        visitors: 0 
+      });
 
       setStats({
         transactions: transactionStats

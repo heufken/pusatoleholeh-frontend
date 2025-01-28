@@ -31,7 +31,7 @@ const AddProduct = () => {
     cover: null,
     products: []
   });
-  const [isUploading, setIsUploading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Fungsi untuk validasi file
   const validateFile = (file) => {
@@ -103,17 +103,14 @@ const AddProduct = () => {
           ...prev,
           productImages: [...prev.productImages, ...validFiles]
         }));
-        // console.log(productData.productImages);
         const newPreviews = validFiles.map(file => ({
           name: file.name,
           preview: URL.createObjectURL(file)
         }));
-        // console.log(newPreviews);
         setUploadedFiles(prev => ({
           ...prev,
           products: [...prev.products, ...newPreviews]
         }));
-        // console.log(uploadedFiles);
         toast.success(`${validFiles.length} gambar produk berhasil dipilih`);
       }
     }
@@ -122,16 +119,27 @@ const AddProduct = () => {
   const goToNextTab = () => setCurrentTab(currentTab + 1);
   // const goToPreviousTab = () => setCurrentTab(currentTab - 1);
 
-  const handleProductSubmit = async () => {
-    const toastId = toast.loading("Menyimpan data produk...");
-  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Validasi data produk
+    if (!productData.name || !productData.price || !productData.stock || !productData.categoryId) {
+      toast.error("Pastikan semua data produk terisi");
+      return;
+    }
+
+    // Validasi gambar
+    if (!productData.coverImage && productData.productImages.length === 0) {
+      toast.error('Pilih minimal satu gambar untuk produk');
+      return;
+    }
+
+    // Mulai proses dengan loading state
+    setIsLoading(true);
+    const toastId = toast.loading("Menyimpan produk...");
+
     try {
-      if (!productData.name || !productData.price || !productData.stock || !productData.categoryId) {
-        setErrorMessage("Semua field harus diisi dengan benar.");
-        toast.error("Gagal menyimpan: pastikan semua data terisi.", { id: toastId });
-        return;
-      }
-  
+      // Step 1: Create product and get ID
       const productResponse = await axios.post(
         `${apiUrl}/product/create`,
         {
@@ -143,63 +151,40 @@ const AddProduct = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-  
+
       const productId = productResponse.data.product?._id;
       if (!productId) {
-        setErrorMessage("Gagal membuat produk, ID produk tidak ditemukan.");
-        toast.error("Gagal menyimpan produk. Coba lagi nanti.", { id: toastId });
-        return;
+        throw new Error("ID produk tidak ditemukan");
       }
-  
-      setProductData((prevData) => ({
-        ...prevData,
-        id: productId,
-      }));
-  
-      toast.success("Produk berhasil disimpan!", { id: toastId });
-      setErrorMessage("");
-      goToNextTab(); // Pindah ke tab berikutnya
-    } catch (error) {
-      // console.error(error);
-      setErrorMessage("Gagal menambahkan produk. Silakan coba lagi.");
-      toast.error(`Gagal menyimpan produk: ${error.message}`, { id: toastId });
-    }
-  };
 
-  const handleImageUpload = async () => {
-    if (!productData.coverImage && productData.productImages.length === 0) {
-      toast.error('Pilih minimal satu gambar untuk diupload');
-      return;
-    }
+      // Update toast message
+      toast.loading("Mengupload gambar...", { id: toastId });
 
-    setIsUploading(true);
-    const toastId = toast.loading('Mengupload gambar...');
-
-    try {
-      // Upload cover image
+      // Step 2: Upload cover image if exists
       if (productData.coverImage) {
         const coverFormData = new FormData();
         coverFormData.append("image", productData.coverImage);
         await axios.post(
-          `${apiUrl}/product/upload/cover/${productData.id}`,
+          `${apiUrl}/product/upload/cover/${productId}`,
           coverFormData,
-          { headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }}
+          { 
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data'
+            }
+          }
         );
       }
 
-      // Upload product images
+      // Step 3: Upload product images if exists
       if (productData.productImages.length > 0) {
         const imageFormData = new FormData();
-        // Ubah nama field menjadi "image" (sesuaikan dengan backend)
         productData.productImages.forEach((file) => {
           imageFormData.append("image", file);
         });
         
         await axios.post(
-          `${apiUrl}/product/upload/image/${productData.id}`, // Pastikan endpoint sesuai
+          `${apiUrl}/product/upload/image/${productId}`,
           imageFormData,
           { 
             headers: { 
@@ -210,27 +195,24 @@ const AddProduct = () => {
         );
       }
 
+      // Success! Update UI and show success message
       setUploadSuccess(true);
-      toast.success('Gambar berhasil diupload!', { id: toastId });
-      setIsSuccess(true); // Set success state after successful upload
+      setIsSuccess(true);
+      toast.success('Produk berhasil disimpan!', { id: toastId });
+      
+      // Optional: Navigate to next tab or product list
+      goToProductList();
+
     } catch (error) {
-      console.error('Error uploading images:', error);
+      console.error('Error:', error);
       toast.error(
-        error.response?.data?.message || 'Gagal mengupload gambar', 
+        error.response?.data?.message || 'Gagal menyimpan produk', 
         { id: toastId }
       );
-      setErrorMessage('Gagal mengupload gambar. Silakan coba lagi.');
+      setErrorMessage('Gagal menyimpan produk. Silakan coba lagi.');
     } finally {
-      setIsUploading(false);
+      setIsLoading(false);
     }
-  };
-
-  const handleSubmit = async () => {
-    if (!productData.id) {
-      await handleProductSubmit();
-    }
-  
-    await handleImageUpload();
   };
 
   // Fungsi untuk navigasi ke halaman daftar produk
@@ -513,32 +495,26 @@ const AddProduct = () => {
                   {/* Submit Button */}
                   <div className="flex justify-end pt-6 border-t border-gray-100">
                     <button
-                      type="submit"
-                      disabled={isUploading || (!productData.coverImage && productData.productImages.length === 0)}
-                      className="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4F46E5]/90 hover:to-[#7C3AED]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={handleSubmit}
+                      disabled={isLoading}
+                      className={`px-6 py-2.5 ${
+                        isLoading 
+                          ? 'bg-gray-300 cursor-not-allowed' 
+                          : 'bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-90'
+                      } text-white font-medium rounded-lg transition-all duration-200`}
                     >
-                      {isUploading ? (
-                        <>
+                      {isLoading ? (
+                        <div className="flex items-center">
                           <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
-                          Mengupload...
-                        </>
+                          Menyimpan...
+                        </div>
                       ) : (
-                        <>
-                          Simpan & Lanjutkan
-                        </>
+                        'Simpan & Lanjutkan'
                       )}
                     </button>
-                    {uploadSuccess && (
-                      <button
-                        onClick={goToNextTab}
-                        className="px-6 py-2.5 text-[#4F46E5] border-2 border-[#4F46E5] font-medium rounded-lg hover:bg-[#4F46E5] hover:text-white transition-colors"
-                      >
-                        Lanjutkan
-                      </button>
-                    )}
                   </div>
                 </form>
               </div>
@@ -677,34 +653,26 @@ const AddProduct = () => {
                     {/* Upload Button */}
                     <div className="mt-8 flex justify-between">
                       <button
-                        onClick={handleImageUpload}
-                        disabled={isUploading || (!productData.coverImage && productData.productImages.length === 0)}
-                        className={`inline-flex items-center px-6 py-2.5 rounded-lg
-                          ${isUploading || (!productData.coverImage && productData.productImages.length === 0)
-                            ? 'bg-gray-300 cursor-not-allowed'
+                        onClick={handleSubmit}
+                        disabled={isLoading}
+                        className={`px-6 py-2.5 ${
+                          isLoading 
+                            ? 'bg-gray-300 cursor-not-allowed' 
                             : 'bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-90'
-                          } text-white font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+                        } text-white font-medium rounded-lg transition-all duration-200`}
                       >
-                        {isUploading ? (
-                          <>
+                        {isLoading ? (
+                          <div className="flex items-center">
                             <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            Mengupload...
-                          </>
+                            Menyimpan...
+                          </div>
                         ) : (
                           'Upload Gambar'
                         )}
                       </button>
-                      {uploadSuccess && (
-                        <button
-                          onClick={goToNextTab}
-                          className="px-6 py-2.5 text-[#4F46E5] border-2 border-[#4F46E5] font-medium rounded-lg hover:bg-[#4F46E5] hover:text-white transition-colors"
-                        >
-                          Lanjutkan
-                        </button>
-                      )}
                     </div>
                   </div>
                 </div>

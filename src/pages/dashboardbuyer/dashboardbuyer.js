@@ -40,12 +40,18 @@ const DashboardBuyer = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       setIsLoading(true);
-      setError(null);
       try {
         const headers = { Authorization: `Bearer ${token}` };
         const [userResponse, paymentResponse] = await Promise.all([
           axios.get(`${apiUrl}/user`, { headers }),
-          axios.get(`${apiUrl}/user/payment`, { headers })
+          axios.get(`${apiUrl}/user/payment`, { headers }).catch(err => {
+            // Handle payment method error separately
+            if (err.response?.status === 404) {
+              toast.error('Anda belum memiliki metode pembayaran');
+              return { data: { paymentMethods: [] } };
+            }
+            throw err;
+          })
         ]);
         
         setDashboardData({
@@ -54,10 +60,13 @@ const DashboardBuyer = () => {
           addressData: userResponse.data.address || [],
           paymentData: paymentResponse.data.paymentMethods || []
         });
+        setError(null);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        setError(error.response?.data?.message || 'Terjadi kesalahan saat mengambil data');
-        toast.error('Gagal memuat data dashboard');
+        if (error.response?.status !== 404) {
+          setError('Terjadi kesalahan saat mengambil data');
+          toast.error('Gagal memuat data dashboard');
+        }
       } finally {
         setIsLoading(false);
       }

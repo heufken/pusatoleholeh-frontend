@@ -116,10 +116,6 @@ function RelatedProduct({ categoryId, currentProductId }) {
                   src={product.productCover} 
                   alt={product.name} 
                   className="w-full h-48 object-cover rounded-lg mb-2"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = 'path/to/fallback/image.jpg';
-                  }}
                 />
               </div>
               <h3 className="font-semibold text-gray-800 text-lg mb-1 line-clamp-2">{product.name}</h3>

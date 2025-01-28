@@ -36,7 +36,12 @@ const BalanceAndTopUp = ({
           paymentData.map((payment) => (
             <div
               key={payment._id}
-              className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 group hover:-translate-y-1"
+              className={`bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 group hover:-translate-y-1 transition-all duration-300 ${
+                selectedPayment === payment._id ? 'ring-2 ring-[#4F46E5]' : ''
+              }`}
+              onClick={() => setSelectedPayment(payment._id)}
+              role="button"
+              tabIndex={0}
             >
               <div className="flex flex-col">
                 <span className="text-sm text-gray-600 mb-1">Metode Pembayaran</span>
@@ -90,7 +95,7 @@ const BalanceAndTopUp = ({
               onChange={(e) => setAmount(e.target.value)}
               placeholder="Masukkan jumlah"
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-[#4F46E5] focus:border-[#4F46E5] bg-white text-gray-900"
-              disabled={isLoading}
+              disabled={isLoading || !selectedPayment}
               min="10000"
               step="10000"
             />
@@ -208,19 +213,20 @@ const Payment = ({ paymentData, setDashboardData }) => {
 
     setIsLoading(true);
     try {
-      const headers = { Authorization: `Bearer ${token}` };
       await axios.post(
         `${apiUrl}/user/payment/${selectedPayment}?amount=${amount}`,
         {},
-        { headers }
+        { headers: { Authorization: `Bearer ${token}` }}
       );
+
       toast.success('Top up berhasil');
       setAmount('');
       setSelectedPayment(null);
-      setDashboardData(prev => ({
-        ...prev,
-        paymentData: prev.paymentData.map(payment => payment._id === selectedPayment ? { ...payment, credit: payment.credit + parseInt(amount) } : payment)
-      }));
+      
+      // Refresh page to show updated balance
+      if (typeof window !== 'undefined') {
+        window.location.reload();
+      }
     } catch (error) {
       console.error('Error adding credit:', error);
       toast.error(error.response?.data?.message || 'Gagal melakukan top up');
