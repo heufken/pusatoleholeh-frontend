@@ -136,7 +136,10 @@ function RegisterPage() {
             </div>
 
             <div className="text-right">
-              <button className="text-[#4F46E5] text-sm hover:text-[#4338CA]">
+              <button 
+                type="button"
+                className="text-[#4F46E5] text-sm hover:text-[#4338CA]"
+              >
                 Lupa password?
               </button>
             </div>

@@ -136,8 +136,8 @@ const Search = () => {
                       className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1"
                     >
                       <div className="p-4">
-                        <h3 className="font-semibold text-xl text-gray-800 mb-2 hover:text-[#4F46E5]">
-                          {result.name || "Nama toko tidak tersedia"}
+                        <h3 className="font-semibold text-xl text-gray-900">
+                          {result.shopName || result.username}
                         </h3>
                         <p className="text-gray-600 text-sm">
                           {result.description || "Deskripsi tidak tersedia"}

@@ -148,7 +148,7 @@ function RegisterSellerPage() {
               }`}
               disabled={loading}
             >
-              {loading ? "Loading..." : "Buat Akun Seller"}
+              {loading ? "Loading..." : 'Buat Akun Seller'}
             </button>
           </form>
 
