@@ -220,7 +220,7 @@ function ProductSection({ productData, onAddToCart }) {
   };
 
   return (
-    <div className="product-section p-4 border-b border-gray-300">
+    <div className="product-section p-4 border-b border-gray-300 bg-gradient-to-br from-[#4F46E5]/5 to-[#7C3AED]/5">
       <style>
         {`
           .swiper-pagination-bullet {
@@ -273,8 +273,8 @@ function ProductSection({ productData, onAddToCart }) {
             alt={productData.name}
             className={`w-full h-24 object-cover rounded-lg cursor-pointer transition-all ${
               selectedImage === productData.productCover
-                ? "border-2 border-red-500"
-                : "border-2 border-transparent hover:border-gray-300"
+                ? "border-2 border-[#4F46E5] shadow-md"
+                : "border-2 border-transparent hover:border-[#4F46E5]/30 hover:shadow-sm"
             }`}
             onClick={() => setSelectedImage(productData.productCover)}
           />
@@ -285,8 +285,8 @@ function ProductSection({ productData, onAddToCart }) {
               alt={`${productData.name} view ${index + 1}`}
               className={`w-full h-24 object-cover rounded-lg cursor-pointer transition-all ${
                 selectedImage === img
-                  ? "border-2 border-red-500"
-                  : "border-2 border-transparent hover:border-gray-300"
+                  ? "border-2 border-[#4F46E5] shadow-md"
+                  : "border-2 border-transparent hover:border-[#4F46E5]/30 hover:shadow-sm"
               }`}
               onClick={() => setSelectedImage(img)}
             />
@@ -341,7 +341,7 @@ function ProductSection({ productData, onAddToCart }) {
               <div className="quantity-selector flex items-center border border-gray-300 rounded-lg mb-4 w-36 overflow-hidden">
                 <button
                   onClick={() => handleQuantityChange(-1)}
-                  className="p-2 hover:bg-[#4F46E5] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 bg-white hover:bg-[#4F46E5] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={quantity <= 1}
                 >
                   -
@@ -356,7 +356,7 @@ function ProductSection({ productData, onAddToCart }) {
                 />
                 <button
                   onClick={() => handleQuantityChange(1)}
-                  className="p-2 hover:bg-[#4F46E5] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 bg-white hover:bg-[#4F46E5] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={quantity >= productData.stock}
                 >
                   +
@@ -436,7 +436,7 @@ function ProductSection({ productData, onAddToCart }) {
 
           {/* Shop Info */}
           <div className="shop-info mb-6">
-            <div className="border border-gray-300 p-4 rounded-lg">
+            <div className="border border-gray-300 bg-white p-4 rounded-lg">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <div className="w-12 h-12 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] rounded-full flex items-center justify-center text-white">
@@ -477,7 +477,7 @@ function ProductSection({ productData, onAddToCart }) {
 
           {/* Shipping Info */}
           <div className="shipping-info">
-            <div className="border border-gray-300 rounded-lg divide-y divide-gray-300">
+            <div className="border border-gray-300 bg-white rounded-lg divide-y divide-gray-300">
               <div className="p-4">
                 <div className="flex items-center">
                   <FontAwesomeIcon

@@ -2,8 +2,8 @@ import React from "react";
 
 const Footer = () => {
   return (
-    <footer className="bg-white py-4 border-t">
-      <div className="container mx-auto px-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <footer>
+      <div className="container mx-auto px-4 py-12 grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="flex justify-center">
           <img src="/logo.png" alt="Logo" className="w-16 h-16" />
         </div>
@@ -59,7 +59,7 @@ const Footer = () => {
         </div>
       </div>
       <div className="mt-5 text-center text-gray-500 text-xs">
-        © 2024 Pusat Oleh-oleh. All rights reserved.
+        2024 Pusat Oleh-oleh. All rights reserved.
       </div>
     </footer>
   );

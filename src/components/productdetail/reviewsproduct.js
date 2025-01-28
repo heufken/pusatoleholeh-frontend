@@ -213,24 +213,23 @@ function ProductReviews({ productId }) {
   };
 
   return (
-    <div className="p-4 border-t border-gray-300">
+    <div className="p-4 bg-gradient-to-br from-[#4F46E5]/5 to-[#7C3AED]/5 rounded-lg">
+      <div className="flex items-center mb-4">
+        <div className="w-1 h-8 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] rounded-lg mr-3"></div>
+        <h2 className="text-xl font-bold text-gray-800">Ulasan Produk</h2>
+      </div>
       <div className="flex flex-col md:flex-row items-start mb-6">
         <div className="w-full md:w-1/3">
-          <div className="flex items-center mb-4">
-            <div className="w-4 h-8 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] rounded mr-2"></div>
-            <h2 className="text-xl font-bold text-[#4F46E5]">Ulasan Produk</h2>
+          <div className="flex items-center">
+            <div className="text-4xl font-bold text-gray-800 mr-4">{averageRating.toFixed(1)}</div>
+            <div>
+              <span className="text-yellow-400 text-3xl mr-2">★</span>
+              <span className="text-lg text-gray-600 ml-1">/5.0</span>
+            </div>
           </div>
-          
-          <div className="flex items-center mb-4">
-            <span className="text-yellow-400 text-3xl mr-2">★</span>
-            <span className="text-3xl font-bold">{averageRating.toFixed(1)}</span>
-            <span className="text-lg text-gray-600 ml-1">/5.0</span>
-          </div>
-          
           <p className="text-gray-700 mb-4">
             {totalReviews} {totalReviews === 1 ? 'Ulasan' : 'Ulasan'}
           </p>
-          
           <RatingChart reviews={reviews} totalReviews={totalReviews} />
         </div>
 
@@ -244,7 +243,7 @@ function ProductReviews({ productId }) {
             </button>
 
             {showReviewForm && (
-              <form onSubmit={handleSubmitReview} className="space-y-4 bg-white p-6 rounded-lg shadow-sm">
+              <div className="mb-6 bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                 <div>
                   <label className="block mb-2 font-medium text-gray-700">Rating</label>
                   <StarRating rating={rating} setRating={setRating} />
@@ -293,18 +292,19 @@ function ProductReviews({ productId }) {
                 <button
                   type="submit"
                   className="px-4 py-2 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-lg hover:opacity-90 transition-all"
+                  onClick={handleSubmitReview}
                 >
                   Submit Review
                 </button>
-              </form>
+              </div>
             )}
           </div>
         )}
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {reviews.map((review) => (
-          <div key={review._id} className="bg-white rounded-lg shadow-sm p-6 border">
+          <div key={review._id} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] rounded-full flex items-center justify-center text-white font-bold">

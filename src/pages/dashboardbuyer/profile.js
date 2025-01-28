@@ -87,93 +87,111 @@ const Profile = ({ userData, userImage, onUpdateImage }) => {
   };
 
   return (
-    <div className="grid md:grid-cols-2 gap-6">
-      <div>
-        <div className="mb-6">
-          <div className="relative w-32 h-32 group">
-            {userImage ? (
-              <img
-                src={normalizeUrl(userImage.url)}
-                alt="Profile"
-                className="w-full h-full object-cover rounded-full border-4 border-gray-200"
-              />
-            ) : (
-              <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-500">No Image</span>
-              </div>
-            )}
-            <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-full flex flex-col items-center justify-center space-y-2">
-              <label className="cursor-pointer px-3 py-1 bg-white text-gray-800 rounded-md hover:bg-gray-100 transition text-sm">
-                {userImage ? 'Ubah Foto' : 'Upload Foto'}
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleFileSelect}
+    <div className="grid md:grid-cols-2 gap-8">
+      {/* Profile Image Section */}
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-8">
+        <div className="flex items-center mb-6">
+          <div className="w-1 h-6 bg-gradient-to-b from-[#4F46E5] to-[#7C3AED] rounded mr-3"></div>
+          <h3 className="text-2xl font-bold text-gray-900">Foto Profil</h3>
+        </div>
+        <div className="flex flex-col items-center space-y-6">
+          <div className="relative group">
+            <div className="w-32 h-32 rounded-full bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] p-1">
+              {userImage ? (
+                <img
+                  src={normalizeUrl(userImage.url)}
+                  alt="Profile"
+                  className="w-full h-full object-cover rounded-full"
                 />
-              </label>
-              {userImage && (
-                <button
-                  onClick={handleDeleteImage}
-                  className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition text-sm"
-                >
-                  Hapus Foto
-                </button>
+              ) : (
+                <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
               )}
             </div>
+            <label className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-lg cursor-pointer transform transition-transform duration-300 hover:scale-110">
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileSelect}
+              />
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#4F46E5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </label>
           </div>
+          {userImage && (
+            <button
+              onClick={handleDeleteImage}
+              className="inline-flex items-center px-4 py-2 text-sm text-red-600 hover:text-red-700 transition-colors duration-300"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Hapus Foto
+            </button>
+          )}
         </div>
+      </div>
 
-        <div className="space-y-4">
+      {/* Profile Info Section */}
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-8">
+        <div className="flex items-center mb-6">
+          <div className="w-1 h-6 bg-gradient-to-b from-[#4F46E5] to-[#7C3AED] rounded mr-3"></div>
+          <h3 className="text-2xl font-bold text-gray-900">Informasi Profil</h3>
+        </div>
+        <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-600">Nama</label>
-            <p className="text-lg">{userData.name}</p>
+            <label className="text-sm font-medium text-gray-600">Nama</label>
+            <p className="text-lg font-medium text-gray-900 mt-1">{userData.name}</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600">Email</label>
-            <p className="text-lg">{userData.email}</p>
+            <label className="text-sm font-medium text-gray-600">Email</label>
+            <p className="text-lg font-medium text-gray-900 mt-1">{userData.email}</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600">Role</label>
-            <p className="text-lg capitalize">{userData.role}</p>
+            <label className="text-sm font-medium text-gray-600">Username</label>
+            <p className="text-lg font-medium text-gray-900 mt-1">{userData.username}</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600">Bergabung Sejak</label>
-            <p className="text-lg">{formatDate(userData.createdAt)}</p>
+            <label className="text-sm font-medium text-gray-600">Bergabung Sejak</label>
+            <p className="text-lg font-medium text-gray-900 mt-1">{formatDate(userData.createdAt)}</p>
           </div>
         </div>
       </div>
 
-      {/* Modal Preview */}
+      {/* Image Preview Modal */}
       {isPreviewModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white w-[500px] p-6 rounded-xl shadow-2xl">
-            <h3 className="text-xl font-semibold mb-4">
-              Preview Foto Profil
-            </h3>
-            
-            <div className="mb-4 w-32 h-32 mx-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-lg w-full mx-4">
+            <div className="mb-6">
+              <h4 className="text-xl font-bold text-gray-900">Pratinjau Foto Profil</h4>
+            </div>
+            <div className="relative w-48 h-48 mx-auto mb-6">
               <img
                 src={previewImage}
                 alt="Preview"
                 className="w-full h-full object-cover rounded-full"
               />
             </div>
-
-            <div className="flex justify-end space-x-3">
+            <div className="flex justify-end space-x-4">
               <button
                 onClick={() => {
                   setIsPreviewModalOpen(false);
                   setPreviewImage(null);
                   setSelectedFile(null);
                 }}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                className="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-300"
               >
                 Batal
               </button>
               <button
                 onClick={handleSaveImage}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                className="px-6 py-2 bg-[#4F46E5] text-white rounded-lg hover:bg-[#4F46E5]/90 transition-colors duration-300"
               >
                 Simpan
               </button>
@@ -185,4 +203,4 @@ const Profile = ({ userData, userImage, onUpdateImage }) => {
   );
 };
 
-export default Profile; 
+export default Profile;

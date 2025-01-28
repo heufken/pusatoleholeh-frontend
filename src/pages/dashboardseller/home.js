@@ -1,28 +1,29 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { ExclamationTriangleIcon, ChartBarIcon, EyeIcon, ShoppingCartIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/solid';
+import { ExclamationTriangleIcon, ChartBarIcon, EyeIcon, ShoppingCartIcon, CurrencyDollarIcon, UsersIcon, ClockIcon } from '@heroicons/react/24/solid';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { AuthContext } from '../../components/context/AuthContext';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { Link } from 'react-router-dom';
 
-const StatCard = ({ label, value, icon: Icon, loading, trend }) => (
-  <div className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow">
-    <div className="flex items-center justify-between mb-2">
-      <h2 className="text-lg font-semibold text-gray-800">{label}</h2>
-      <Icon className="w-6 h-6 text-blue-500" />
+const StatCard = ({ label, value, icon: Icon, loading, onClick }) => (
+  <div 
+    onClick={onClick}
+    className={`bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ${onClick ? 'cursor-pointer' : ''}`}
+  >
+    <div className="flex items-center justify-between mb-4">
+      <h2 className="text-lg font-semibold bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-transparent bg-clip-text">{label}</h2>
+      <div className="p-3 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
+        <Icon className="w-6 h-6 text-[#4F46E5]" />
+      </div>
     </div>
     {loading ? (
-      <div className="h-8 bg-gray-200 animate-pulse rounded"></div>
+      <div className="space-y-3">
+        <div className="h-8 bg-gray-200 animate-pulse rounded-lg"></div>
+        <div className="h-4 bg-gray-200 animate-pulse rounded-lg w-2/3"></div>
+      </div>
     ) : (
-      <>
-        <p className="text-2xl font-bold text-gray-900">{value}</p>
-        {trend && (
-          <div className={`flex items-center mt-2 text-sm ${trend > 0 ? 'text-green-500' : 'text-red-500'}`}>
-            <ArrowTrendingUpIcon className={`w-4 h-4 mr-1 ${trend < 0 ? 'transform rotate-180' : ''}`} />
-            <span>{Math.abs(trend)}% dari kemarin</span>
-          </div>
-        )}
-      </>
+      <p className="text-3xl font-bold text-gray-800">{value}</p>
     )}
   </div>
 );
@@ -33,7 +34,9 @@ const Home = () => {
       newOrders: 0,
       readyToShip: 0,
       totalSales: 0,
-      newChats: 0
+      newChats: 0,
+      revenue: 0,
+      visitors: 0
     }
   });
   const [loading, setLoading] = useState(true);
@@ -82,7 +85,6 @@ const Home = () => {
 
   useEffect(() => {
     fetchStats();
-    // Set up polling every 5 minutes
     const interval = setInterval(fetchStats, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [token, apiUrl]);
@@ -97,15 +99,21 @@ const Home = () => {
 
   if (error) {
     return (
-      <div className="bg-red-50 p-4 rounded-lg">
-        <div className="flex items-center">
-          <ExclamationTriangleIcon className="w-6 h-6 text-red-500 mr-2" />
-          <p className="text-red-700">{error}</p>
+      <div className="bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-lg">
+        <div className="flex items-center space-x-4">
+          <div className="p-3 bg-red-100 rounded-xl">
+            <ExclamationTriangleIcon className="w-6 h-6 text-red-500" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">Terjadi Kesalahan</h3>
+            <p className="text-gray-600 mb-4">{error}</p>
+          </div>
         </div>
         <button
           onClick={fetchStats}
-          className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+          className="inline-flex items-center px-6 py-2.5 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white font-medium rounded-xl shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:scale-105 transition-all duration-300"
         >
+          <ClockIcon className="h-5 w-5 mr-2" />
           Coba Lagi
         </button>
       </div>
@@ -113,97 +121,144 @@ const Home = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4">
-      <div className="col-span-1">
-        <h1 className="text-2xl font-bold mb-4">Penting Hari Ini</h1>
-        <p className="mb-4">Aktivitas Penting Yang Harus Dilakukan</p>
-        
-        {/* Transaction Stats */}
-        <div className="mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <StatCard
-              label="Pesanan Baru"
-              value={stats.transactions.newOrders}
-              icon={ShoppingCartIcon}
-              loading={loading}
-            />
-            <StatCard
-              label="Siap Terkirim"
-              value={stats.transactions.readyToShip}
-              icon={ShoppingCartIcon}
-              loading={loading}
-            />
-            <StatCard
-              label="Chat Baru"
-              value={stats.transactions.newChats}
-              icon={ChartBarIcon}
-              loading={loading}
-            />
-            <StatCard
-              label="Total Sales"
-              value={stats.transactions.totalSales}
-              icon={ChartBarIcon}
-              loading={loading}
-            />
-          </div>
-        </div>
+    <div className="space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-transparent bg-clip-text mb-2">
+          Selamat Datang Kembali!
+        </h1>
+        <p className="text-gray-600">Berikut ringkasan aktivitas toko Anda hari ini</p>
+      </div>
+      
+      {/* Transaction Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <StatCard
+          label="Pesanan Baru"
+          value={stats.transactions.newOrders}
+          icon={ShoppingCartIcon}
+          loading={loading}
+          onClick={() => window.location.href = '/dashboard-seller/pesanan'}
+        />
+        <StatCard
+          label="Siap Kirim"
+          value={stats.transactions.readyToShip}
+          icon={ShoppingCartIcon}
+          loading={loading}
+          onClick={() => window.location.href = '/dashboard-seller/pesanan'}
+        />
+        <StatCard
+          label="Pendapatan"
+          value={formatCurrency(stats.transactions.revenue || 0)}
+          icon={CurrencyDollarIcon}
+          loading={loading}
+        />
+        <StatCard
+          label="Pengunjung"
+          value={stats.transactions.visitors || 0}
+          icon={UsersIcon}
+          loading={loading}
+        />
+      </div>
 
-        {/* Shop Statistics */}
-        <h2 className="text-xl font-bold mb-4">Statistik Toko</h2>
-        <p className="mb-4">Update Terakhir: {new Date().toLocaleString('id-ID', { 
-          dateStyle: 'long', 
-          timeStyle: 'short' 
-        })}</p>
-        <div className="bg-white shadow rounded-lg p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 divide-x divide-gray-300">
-            <div className="p-4">
-              <h3 className="text-lg font-semibold">Total Penjualan</h3>
+      {/* Shop Statistics */}
+      <div>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-transparent bg-clip-text">
+            Statistik Toko
+          </h2>
+          <p className="text-gray-500 flex items-center">
+            <ClockIcon className="w-5 h-5 mr-2" />
+            Update Terakhir: {new Date().toLocaleString('id-ID', { 
+              dateStyle: 'long', 
+              timeStyle: 'short' 
+            })}
+          </p>
+        </div>
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl hover:shadow-md transition-all duration-300">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Total Penjualan</h3>
               {loading ? (
-                <div className="h-8 bg-gray-200 animate-pulse rounded mt-2"></div>
+                <div className="space-y-3">
+                  <div className="h-8 bg-gray-200 animate-pulse rounded-lg"></div>
+                  <div className="h-4 bg-gray-200 animate-pulse rounded-lg w-2/3"></div>
+                </div>
               ) : (
                 <>
-                  <p className="text-2xl font-bold">{stats.transactions.totalSales}</p>
-                  <p className="text-gray-500">Total Transaksi Selesai</p>
+                  <p className="text-3xl font-bold text-[#4F46E5] mb-2">{stats.transactions.totalSales}</p>
+                  <p className="text-gray-600">Total Transaksi Selesai</p>
                 </>
               )}
             </div>
-            <div className="p-4">
-              <h3 className="text-lg font-semibold">Pesanan Baru</h3>
+            <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl hover:shadow-md transition-all duration-300">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Pesanan Baru</h3>
               {loading ? (
-                <div className="h-8 bg-gray-200 animate-pulse rounded mt-2"></div>
+                <div className="space-y-3">
+                  <div className="h-8 bg-gray-200 animate-pulse rounded-lg"></div>
+                  <div className="h-4 bg-gray-200 animate-pulse rounded-lg w-2/3"></div>
+                </div>
               ) : (
                 <>
-                  <p className="text-2xl font-bold">{stats.transactions.newOrders}</p>
-                  <p className="text-gray-500">Menunggu Diproses</p>
+                  <p className="text-3xl font-bold text-[#4F46E5] mb-2">{stats.transactions.newOrders}</p>
+                  <p className="text-gray-600">Menunggu Diproses</p>
                 </>
               )}
             </div>
-
+            <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl hover:shadow-md transition-all duration-300">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Pendapatan Bulan Ini</h3>
+              {loading ? (
+                <div className="space-y-3">
+                  <div className="h-8 bg-gray-200 animate-pulse rounded-lg"></div>
+                  <div className="h-4 bg-gray-200 animate-pulse rounded-lg w-2/3"></div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-3xl font-bold text-[#4F46E5] mb-2">{formatCurrency(stats.transactions.revenue || 0)}</p>
+                  <p className="text-gray-600">Total Pendapatan</p>
+                </>
+              )}
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Product Status */}
-        <h2 className="text-xl font-bold mb-4">Cek Keadaan Produkmu</h2>
-        <div className="bg-white shadow rounded-lg p-6 mb-6">
-          <div className="border border-gray-300 rounded-lg overflow-hidden">
-            <div className="grid grid-cols-1 md:grid-cols-5 divide-x divide-gray-300">
-              <div className="col-span-1 p-4 bg-gray-50">
-                <div className="flex items-center">
-                  <EyeIcon className="w-5 h-5 text-blue-500 mr-2" />
-                  <p className="font-medium">Perlu Dipromosikan</p>
+      {/* Quick Actions */}
+      <div>
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-transparent bg-clip-text mb-6">
+          Aksi Cepat
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Link to="/dashboard-seller/produk" className="block">
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="flex items-center space-x-6">
+                <div className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
+                  <EyeIcon className="w-8 h-8 text-[#4F46E5]" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Kelola Produk</h3>
+                  <p className="text-gray-600">
+                    Tambah atau edit produk Anda
+                  </p>
                 </div>
               </div>
-              <div className="col-span-4 p-4">
-                {loading ? (
-                  <div className="h-16 bg-gray-200 animate-pulse rounded"></div>
-                ) : (
+            </div>
+          </Link>
+          
+          <Link to="/dashboard-seller/pesanan" className="block">
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="flex items-center space-x-6">
+                <div className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
+                  <ShoppingCartIcon className="w-8 h-8 text-[#4F46E5]" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Kelola Pesanan</h3>
                   <p className="text-gray-600">
-                    Belum ada produk yang perlu dipromosikan
+                    Lihat dan proses pesanan masuk
                   </p>
-                )}
+                </div>
               </div>
             </div>
-          </div>
+          </Link>
         </div>
       </div>
     </div>

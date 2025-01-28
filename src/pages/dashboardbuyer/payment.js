@@ -17,23 +17,32 @@ const BalanceAndTopUp = ({
   <div className="space-y-8">
     {/* Payment Methods List */}
     <div>
-      <h3 className="text-lg font-semibold mb-4">Saldo Tersedia</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="flex items-center mb-6">
+        <div className="w-1 h-6 bg-gradient-to-b from-[#4F46E5] to-[#7C3AED] rounded mr-3"></div>
+        <h3 className="text-2xl font-bold text-gray-900">Saldo Tersedia</h3>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {paymentData.length === 0 ? (
-          <p className="text-gray-500 col-span-2 text-center py-4">
-            Belum ada metode pembayaran yang tersedia
-          </p>
+          <div className="col-span-2 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-8 text-center">
+            <div className="w-16 h-16 mx-auto bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] rounded-full flex items-center justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+            </div>
+            <p className="text-lg text-gray-600 mb-2">Belum ada metode pembayaran</p>
+            <p className="text-sm text-gray-500">Tambahkan metode pembayaran untuk mulai bertransaksi</p>
+          </div>
         ) : (
           paymentData.map((payment) => (
             <div
               key={payment._id}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
+              className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 group hover:-translate-y-1"
             >
               <div className="flex flex-col">
-                <span className="text-gray-600 text-sm mb-1">Metode Pembayaran</span>
-                <span className="font-medium text-lg mb-3">{payment.name}</span>
-                <span className="text-gray-600 text-sm">Saldo</span>
-                <span className="font-semibold text-xl text-green-600">
+                <span className="text-sm text-gray-600 mb-1">Metode Pembayaran</span>
+                <span className="text-xl font-medium text-gray-900 mb-4">{payment.name}</span>
+                <span className="text-sm text-gray-600 mb-1">Saldo</span>
+                <span className="text-2xl font-bold text-[#4F46E5]">
                   {formatCurrency(payment.credit || 0)}
                 </span>
               </div>
@@ -45,54 +54,63 @@ const BalanceAndTopUp = ({
 
     {/* Top Up Form */}
     {paymentData.length > 0 && (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold mb-4">Top Up Saldo</h3>
-        <form onSubmit={handleAddCredit}>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="paymentSelect" className="block text-sm font-medium text-gray-700 mb-1">
-                Pilih Metode Pembayaran
-              </label>
-              <select
-                id="paymentSelect"
-                value={selectedPayment || ''}
-                onChange={(e) => setSelectedPayment(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#4F46E5] focus:border-[#4F46E5]"
-                disabled={isLoading}
-              >
-                <option value="">Pilih metode pembayaran</option>
-                {paymentData.map((payment) => (
-                  <option key={payment._id} value={payment._id}>
-                    {payment.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
-                Jumlah Top Up
-              </label>
-              <input
-                id="amount"
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="Masukkan jumlah"
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#4F46E5] focus:border-[#4F46E5]"
-                disabled={isLoading}
-                min="10000"
-                step="10000"
-              />
-              <p className="text-sm text-gray-500 mt-1">Minimal top up Rp10.000</p>
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white py-2 px-4 rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isLoading || !selectedPayment || !amount || amount < 10000}
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-8">
+        <div className="flex items-center mb-6">
+          <div className="w-1 h-6 bg-gradient-to-b from-[#4F46E5] to-[#7C3AED] rounded mr-3"></div>
+          <h3 className="text-2xl font-bold text-gray-900">Top Up Saldo</h3>
+        </div>
+        <form onSubmit={handleAddCredit} className="space-y-6">
+          <div>
+            <label htmlFor="paymentSelect" className="block text-sm font-medium text-gray-700 mb-2">
+              Pilih Metode Pembayaran
+            </label>
+            <select
+              id="paymentSelect"
+              value={selectedPayment || ''}
+              onChange={(e) => setSelectedPayment(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-[#4F46E5] focus:border-[#4F46E5] bg-white text-gray-900"
+              disabled={isLoading}
             >
-              {isLoading ? 'Memproses...' : 'Top Up Saldo'}
-            </button>
+              <option value="">Pilih metode pembayaran</option>
+              {paymentData.map((payment) => (
+                <option key={payment._id} value={payment._id}>
+                  {payment.name}
+                </option>
+              ))}
+            </select>
           </div>
+          <div>
+            <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
+              Jumlah Top Up
+            </label>
+            <input
+              id="amount"
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="Masukkan jumlah"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-[#4F46E5] focus:border-[#4F46E5] bg-white text-gray-900"
+              disabled={isLoading}
+              min="10000"
+              step="10000"
+            />
+            <p className="text-sm text-gray-500 mt-2">Minimal top up Rp10.000</p>
+          </div>
+          <button
+            type="submit"
+            className="w-full inline-flex justify-center items-center px-8 py-3 bg-[#4F46E5] text-white font-medium rounded-lg shadow-lg shadow-indigo-500/30 hover:bg-[#4F46E5]/90 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading || !selectedPayment || !amount || amount < 10000}
+          >
+            {isLoading ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Memproses...
+              </>
+            ) : 'Top Up Saldo'}
+          </button>
         </form>
       </div>
     )}

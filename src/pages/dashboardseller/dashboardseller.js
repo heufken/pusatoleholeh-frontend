@@ -108,21 +108,46 @@ const DashboardSeller = () => {
   const shouldShowPopup = initialLoadComplete && isProfileIncomplete && isPopupVisible;
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="flex justify-center items-center h-screen">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-8 w-full max-w-md">
+            <div className="animate-pulse space-y-6">
+              <div className="h-8 bg-gray-200 rounded-lg w-1/2 mx-auto"></div>
+              <div className="space-y-3">
+                <div className="h-4 bg-gray-200 rounded-lg w-full"></div>
+                <div className="h-4 bg-gray-200 rounded-lg w-5/6 mx-auto"></div>
+                <div className="h-4 bg-gray-200 rounded-lg w-4/6 mx-auto"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-          <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Error</h2>
-          <p className="text-gray-600">{error}</p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="flex justify-center items-center h-screen">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
+            <div className="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Terjadi Kesalahan</h2>
+            <p className="text-gray-600 mb-6">{error}</p>
             <button
               onClick={fetchData}
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              className="inline-flex items-center px-6 py-2.5 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white font-medium rounded-lg shadow-lg shadow-indigo-500/30 hover:scale-105 transition-all duration-300"
             >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
               Coba Lagi
             </button>
+          </div>
         </div>
       </div>
     );
@@ -131,42 +156,42 @@ const DashboardSeller = () => {
   return (
     <ShopContext.Provider value={shopData}>
       <UserContext.Provider value={{ userData, addressData }}>
-        <div className="flex flex-col min-h-screen bg-gradient-to-b from-red-200 via-red-50 to-gray-200">
+        <div className="flex flex-col min-h-screen bg-gradient-to-br from-[#4F46E5]/20 to-[#7C3AED]/5">
           {/* Header */}
-          <div className="sticky top-0 z-10">
+          <div className="sticky top-0 z-20">
             <Header toggleSidebar={toggleSidebar} />
           </div>
 
           {/* Main Content */}
-          <div className="flex flex-1 overflow-hidden">
-            {/* Sidebar */}
-            <div
-              className={`bg-white shadow-md transition-all duration-300 ${
-                isCollapsed ? 'w-16' : 'w-64'
-              }`}
-            >
-              <Sidebar
-                isCollapsed={isCollapsed}
-                toggleSidebar={toggleSidebar}
-              />
+          <div className="flex flex-1">
+            {/* Content Area with right margin for sidebar */}
+            <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
+              <div className="p-6">
+                <ErrorBoundary>
+                  <Suspense fallback={
+                    <div className="flex justify-center items-center h-64">
+                      <LoadingSpinner />
+                    </div>
+                  }>
+                    <Routes>
+                      <Route path="home" element={<Home />} />
+                      <Route path="produk" element={<Produk />} />
+                      <Route path="datatoko" element={<DataToko />} />
+                      <Route path="pesanan" element={<Pesanan />} />
+                      <Route path="keuangan" element={<Keuangan />} />
+                      <Route path="profile" element={<ProfileSeller />} />
+                      <Route path="/" element={<Navigate to="home" />} />
+                    </Routes>
+                  </Suspense>
+                </ErrorBoundary>
+              </div>
             </div>
 
-            {/* Content Area */}
-            <div className="flex-grow p-6 pr-4 overflow-auto">
-              <ErrorBoundary>
-                <Suspense fallback={<LoadingSpinner />}>
-                  <Routes>
-                    <Route path="home" element={<Home />} />
-                    <Route path="produk" element={<Produk />} />
-                    <Route path="datatoko" element={<DataToko />} />
-                    <Route path="pesanan" element={<Pesanan />} />
-                    <Route path="keuangan" element={<Keuangan />} />
-                    <Route path="profile" element={<ProfileSeller />} />
-                    <Route path="/" element={<Navigate to="home" />} />
-                  </Routes>
-                </Suspense>
-              </ErrorBoundary>
-            </div>
+            {/* Sidebar */}
+            <Sidebar
+              isCollapsed={isCollapsed}
+              toggleSidebar={toggleSidebar}
+            />
           </div>
 
           {/* Footer */}
@@ -174,7 +199,11 @@ const DashboardSeller = () => {
 
           {/* Profile Popup */}
           {shouldShowPopup && (
-            <Suspense fallback={<LoadingSpinner />}>
+            <Suspense fallback={
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50">
+                <div className="animate-spin w-12 h-12 border-4 border-white border-t-transparent rounded-full"></div>
+              </div>
+            }>
               <ProfilePopup
                 onUpdateAddress={updateAddressData}
                 onUpdateShop={updateShopData}

@@ -52,7 +52,7 @@ const LandingPage = () => {
 
   return (
     <>
-      <div>
+      <div className="min-h-screen bg-gradient-to-br from-[#4F46E5]/20 to-[#7C3AED]/5">
         <Nav />
         <div className="pt-20">
           <Hero />

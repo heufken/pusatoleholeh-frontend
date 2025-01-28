@@ -71,16 +71,17 @@ const Pesanan = () => {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Halaman Pesanan</h1>
+    <div className="p-0 ">
+      <h1 className="text-3xl font-bold bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-transparent bg-clip-text mb-2">Halaman Pesanan</h1>
+      <p className="text-gray-600">Berikut informasi pesanan anda</p>
 
       {/* Ringkasan Pesanan */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6 mt-8">
         {['Not Paid', 'Paid', 'Processed', 'Completed', 'Cancelled'].map((status) => (
-          <div key={status} className="bg-white p-4 rounded-lg shadow flex items-center justify-between">
+          <div key={status} className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]">
             <div>
-              <h2 className="text-lg font-semibold">{status}</h2>
-              <p className="text-2xl font-bold">{statusCounts[status] || 0}</p>
+              <h2 className="text-lg font-semibold text-gray-700">{status}</h2>
+              <p className="text-2xl font-bold text-[#4F46E5]">{statusCounts[status] || 0}</p>
             </div>
             <ChevronDownIcon className="w-5 h-5 text-gray-500" />
           </div>
@@ -88,15 +89,15 @@ const Pesanan = () => {
       </div>
 
       {/* Tabel Daftar Pesanan */}
-      <div className="bg-white shadow rounded-lg border border-gray-300">
-        <div className="p-4 border-b border-gray-300 flex justify-between items-center">
+      <div className="bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl border border-gray-200">
+        <div className="p-4 border-b border-gray-200 flex justify-between items-center">
           <div className="flex items-center">
-            <div className="flex items-center border rounded-lg p-2 w-full md:w-1/3">
-              <MagnifyingGlassIcon className="w-5 h-5 text-gray-500" />
+            <div className="flex items-center border rounded-xl p-2 w-full md:w-1/3 bg-white/90">
+              <MagnifyingGlassIcon className="w-5 h-5 text-[#4F46E5]" />
               <input
                 type="text"
                 placeholder="Cari Nomor Pesanan, Nama Pembeli, atau Produk"
-                className="ml-2 outline-none w-full"
+                className="ml-2 outline-none w-full bg-transparent focus:ring-2 focus:ring-[#4F46E5]/20 rounded-lg"
               />
             </div>
             <div className="relative ml-4">
@@ -125,9 +126,9 @@ const Pesanan = () => {
           </div>
         </div>
 
-        <table className="w-full border-t border-gray-300">
+        <table className="w-full border-t border-gray-200">
           <thead>
-            <tr className="border-b border-gray-300">
+            <tr className="border-b border-gray-200">
               <th className="text-left p-4">Nomor Pesanan</th>
               <th className="text-left p-4">Nama Pembeli</th>
               <th className="text-left p-4">Produk</th>
@@ -141,7 +142,7 @@ const Pesanan = () => {
             {transactions.map((transaction) => {
               const dummyInfo = getDummyInfo(transaction.transactionId);
               return (
-                <tr key={transaction._id} className="border-b border-gray-300 hover:bg-gray-50">
+                <tr key={transaction._id} className="border-b border-gray-200 hover:bg-gray-50">
                   <td className="p-4">{transaction.transactionId}</td>
                   <td className="p-4">{dummyInfo.buyerName}</td>
                   <td className="p-4">{dummyInfo.productName}</td>

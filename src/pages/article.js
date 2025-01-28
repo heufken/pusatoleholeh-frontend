@@ -53,12 +53,12 @@ const Article = () => {
   }, []);
 
   return (
-    <div className="font-sans bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-[#4F46E5]/20 to-[#7C3AED]/5 font-sans">
       <Header />
       <Breadcrumb />
       
       {/* Main Article Section */}
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 py-8">
         {/* Article Header */}
         <div className="mb-8 relative">
           <div className="absolute -left-4 top-0 w-1 h-16 bg-gradient-to-b from-[#4F46E5] to-[#7C3AED]"></div>
@@ -78,7 +78,7 @@ const Article = () => {
         </div>
 
         {/* Article Content */}
-        <article className="bg-white rounded-2xl shadow-xl p-8 mb-12 relative">
+        <article className="bg-white/80 backdrop-blur-sm p-8 rounded-xl shadow-lg mb-12 relative">
           <div className="absolute -z-10 top-0 right-0 w-96 h-96 bg-[#4F46E5]/5 rounded-full blur-3xl"></div>
           
           <div className="prose prose-lg max-w-none">
