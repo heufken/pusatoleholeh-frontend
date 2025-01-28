@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import Header from '../components/section/header';
 import { AuthContext } from '../components/context/AuthContext';
@@ -26,11 +26,18 @@ function Transaction() {
           Authorization: `Bearer ${token}`
         }
       });
-      setTransactions(response.data.transactions);
-      setStatuses(response.data.statuses);
-      setLoading(false);
+      setTransactions(response.data.transactions || []);
+      setStatuses(response.data.statuses || []);
+      setError(null);
     } catch (err) {
-      setError(err.response?.data?.message || 'Error fetching transactions');
+      if (err.response?.status !== 404) {
+        setError(err.response?.data?.message || 'Error fetching transactions');
+      } else {
+        setError(null);
+        setTransactions([]);
+        setStatuses([]);
+      }
+    } finally {
       setLoading(false);
     }
   }, [$apiUrl, token]);
@@ -99,7 +106,7 @@ function Transaction() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#4F46E5]/10 to-[#7C3AED]/10">
       <Header />
-      <div className="container mx-auto px-4 py-6 mt-1 max-w-7xl">
+      <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <span className="inline-block px-4 py-1.5 mb-4 text-sm font-medium bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white rounded-full shadow-lg shadow-indigo-500/30">
             Transaksi Anda
@@ -108,90 +115,123 @@ function Transaction() {
           <p className="text-xl text-gray-600 leading-relaxed">Pantau dan kelola semua transaksi Anda di satu tempat.</p>
         </div>
         
-        <div className="grid gap-6">
-          {transactions.map((transaction) => {
-            const status = getTransactionStatus(transaction._id);
-            return (
-              <div key={transaction._id} className="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-[#4F46E5]/20">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <span className={`px-4 py-1.5 rounded-full text-sm font-medium ${getStatusColor(status)}`}>
-                        {status}
-                      </span>
-                      <p className="text-sm text-gray-500">
-                        {new Date(transaction.createdAt).toLocaleString()}
-                      </p>
-                    </div>
-                    <p className="font-medium text-gray-900">ID: {transaction._id}</p>
-                  </div>
-                  <div className="flex flex-col space-y-3">
-                    {status === 'Not Paid' && (
-                      <button
-                        onClick={() => handlePayTransaction(transaction._id, transaction.paymentId._id)}
-                        className="inline-flex items-center px-6 py-2.5 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white font-medium rounded-lg hover:shadow-lg hover:shadow-indigo-500/30 transition-all duration-300"
-                      >
-                        <span>Bayar Sekarang</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                      </button>
-                    )}
-                    {status === 'Processed' && (
-                      <button
-                        onClick={() => handleCompleteTransaction(transaction._id)}
-                        className="inline-flex items-center px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-lg hover:shadow-lg hover:shadow-emerald-500/30 transition-all duration-300"
-                      >
-                        <span>Selesaikan Pesanan</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      </button>
-                    )}
-                    {status === 'Completed' && (
-                      <span className="inline-flex items-center text-emerald-600 font-medium">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        Transaksi Selesai
-                      </span>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="mt-6 pt-6 border-t border-gray-100">
-                  <div className="grid grid-cols-3 gap-8">
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-gray-500">Metode Pembayaran</p>
-                      <p className="text-base font-semibold text-gray-900">{transaction.paymentId.name}</p>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-gray-500">Kurir</p>
-                      <p className="text-base font-semibold text-gray-900">
-                        {transaction.courierId.name}
-                        <span className="text-sm font-normal text-gray-500 ml-2">
-                          (Rp {transaction.courierId.cost.toLocaleString()})
+        {transactions.length > 0 ? (
+          <div className="grid gap-6">
+            {transactions.map((transaction) => {
+              const status = getTransactionStatus(transaction._id);
+              return (
+                <div key={transaction._id} className="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-[#4F46E5]/20">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <span className={`px-4 py-1.5 rounded-full text-sm font-medium ${getStatusColor(status)}`}>
+                          {status}
                         </span>
-                      </p>
+                        <p className="text-sm text-gray-500">
+                          {new Date(transaction.createdAt).toLocaleString()}
+                        </p>
+                      </div>
+                      <p className="font-medium text-gray-900">ID: {transaction._id}</p>
                     </div>
-                    <div className="space-y-2 text-right">
-                      <p className="text-sm font-medium text-gray-500">Total Pembayaran</p>
-                      <p className="text-lg font-bold text-[#4F46E5]">
-                        Rp {transaction.totalPrice.toLocaleString()}
-                      </p>
+                    <div className="flex flex-col space-y-3">
+                      {status === 'Not Paid' && (
+                        <button
+                          onClick={() => handlePayTransaction(transaction._id, transaction.paymentId._id)}
+                          className="inline-flex items-center px-6 py-2.5 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white font-medium rounded-lg hover:shadow-lg hover:shadow-indigo-500/30 transition-all duration-300"
+                        >
+                          <span>Bayar Sekarang</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      )}
+                      {status === 'Processed' && (
+                        <button
+                          onClick={() => handleCompleteTransaction(transaction._id)}
+                          className="inline-flex items-center px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-lg hover:shadow-lg hover:shadow-emerald-500/30 transition-all duration-300"
+                        >
+                          <span>Selesaikan Pesanan</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      )}
+                      {status === 'Completed' && (
+                        <span className="inline-flex items-center text-emerald-600 font-medium">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          Transaksi Selesai
+                        </span>
+                      )}
                     </div>
                   </div>
-                  {transaction.note && (
-                    <div className="mt-4 p-4 bg-gradient-to-r from-[#4F46E5]/5 to-[#7C3AED]/5 rounded-lg border border-[#4F46E5]/10">
-                      <p className="text-sm font-medium text-gray-500 mb-1">Catatan:</p>
-                      <p className="text-base text-gray-900">{transaction.note}</p>
+                  
+                  <div className="mt-6 pt-6 border-t border-gray-100">
+                    <div className="grid grid-cols-3 gap-8">
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-gray-500">Metode Pembayaran</p>
+                        <p className="text-base font-semibold text-gray-900">{transaction.paymentId.name}</p>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-gray-500">Kurir</p>
+                        <p className="text-base font-semibold text-gray-900">
+                          {transaction.courierId.name}
+                          <span className="text-sm font-normal text-gray-500 ml-2">
+                            (Rp {transaction.courierId.cost.toLocaleString()})
+                          </span>
+                        </p>
+                      </div>
+                      <div className="space-y-2 text-right">
+                        <p className="text-sm font-medium text-gray-500">Total Pembayaran</p>
+                        <p className="text-lg font-bold text-[#4F46E5]">
+                          Rp {transaction.totalPrice.toLocaleString()}
+                        </p>
+                      </div>
                     </div>
-                  )}
+                    {transaction.note && (
+                      <div className="mt-4 p-4 bg-gradient-to-r from-[#4F46E5]/5 to-[#7C3AED]/5 rounded-lg border border-[#4F46E5]/10">
+                        <p className="text-sm font-medium text-gray-500 mb-1">Catatan:</p>
+                        <p className="text-base text-gray-900">{transaction.note}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="bg-white rounded-2xl shadow-xl p-8 text-center hover:shadow-2xl transition-shadow duration-300">
+            <div className="w-48 h-48 mx-auto mb-6 bg-indigo-100 rounded-full flex items-center justify-center">
+              <svg 
+                className="w-24 h-24 text-[#4F46E5]" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24" 
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth="2" 
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" 
+                />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-semibold text-[#4F46E5] mb-4">
+              Belum Ada Transaksi
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Anda belum memiliki riwayat transaksi. Mulai belanja untuk melihat transaksi Anda di sini.
+            </p>
+            <Link 
+              to="/shop" 
+              className="inline-block bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white px-6 py-3 rounded-lg hover:from-[#4338CA] hover:to-[#3730A3] transition-all duration-300 shadow-lg hover:shadow-indigo-500/30"
+            >
+              Mulai Belanja
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

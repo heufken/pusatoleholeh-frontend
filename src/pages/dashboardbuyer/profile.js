@@ -14,12 +14,25 @@ const Profile = ({ userData, userImage, onUpdateImage }) => {
   const normalizeUrl = useCallback(
     (url) => {
       if (!url) return null;
-      const cleanedPath = url
-        .replace(/^.*localhost:\d+\//, "/")
-        .replace(/\\/g, "/");
-      return `${cdnUrl}/${cleanedPath}`
-        .replace(/\/\//g, "/")
-        .replace(":/", "://");
+      
+      try {
+        // Create URL object for parsing
+        const urlObj = new URL(url.replace(/\\/g, "/"));
+        
+        // Get pathname from URL (part after host)
+        const pathname = urlObj.pathname;
+        
+        // Combine with CDN URL
+        return new URL(pathname, cdnUrl).toString();
+      } catch (e) {
+        // If URL is invalid, try alternative method
+        const cleanPath = url
+          .replace(/^(?:https?:)?(?:\/\/)?[^/]+/, '') // Remove protocol and host (fix escape character)
+          .replace(/\\/g, "/")                         // Normalize slashes
+          .replace(/^\/+/, '/');                       // Ensure only one leading slash
+
+        return `${cdnUrl}${cleanPath}`;
+      }
     },
     [cdnUrl]
   );

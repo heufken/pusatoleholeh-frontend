@@ -63,23 +63,35 @@ const DashboardSeller = () => {
         axios.get(`${apiUrl}/user/address`, { headers }),
       ]);
 
-      setShopData({
-        ...shopResponse.data.shop,
-        shopImage: normalizeUrl(shopResponse.data.shopImage),
-        shopBanner: normalizeUrl(shopResponse.data.shopBanner)
-      });
+      // Check if shop data exists
+      if (shopResponse.data.shop) {
+        setShopData({
+          ...shopResponse.data.shop,
+          shopImage: normalizeUrl(shopResponse.data.shopImage),
+          shopBanner: normalizeUrl(shopResponse.data.shopBanner)
+        });
+      } else {
+        // If no shop data, don't set error, just set shopData to null
+        setShopData(null);
+      }
       
       setUserData(userResponse.data.user || null);
       setAddressData(addressResponse.data.address || null);
     } catch (error) {
-      console.error('Error fetching data:', error);
-      setError(error.response?.data?.message || 'Terjadi kesalahan saat mengambil data');
-      toast.error('Gagal memuat data dashboard');
+      // Only set error if it's not a 404 (shop not found) error
+      if (error.response?.status !== 404) {
+        console.error('Error fetching data:', error);
+        setError(error.response?.data?.message || 'Terjadi kesalahan saat mengambil data');
+        toast.error('Gagal memuat data dashboard');
+      } else {
+        // For 404 error (no shop found), set shopData to null
+        setShopData(null);
+      }
     } finally {
       setIsLoading(false);
       setInitialLoadComplete(true);
     }
-  }, [apiUrl, token, cdnUrl, normalizeUrl]);
+  }, [apiUrl, token, normalizeUrl]);
 
   useEffect(() => {
     fetchData();
@@ -93,8 +105,6 @@ const DashboardSeller = () => {
     setShopData(newShopData);
   }, []);
 
-  const isProfileIncomplete = !addressData || !shopData;
-
   const navigate = useNavigate();
   const handleClosePopup = () => {
     setPopupVisible(false);
@@ -105,7 +115,7 @@ const DashboardSeller = () => {
     setIsCollapsed((prev) => !prev);
   }, []);
 
-  const shouldShowPopup = initialLoadComplete && isProfileIncomplete && isPopupVisible;
+  const shouldShowPopup = initialLoadComplete && (!addressData || !shopData) && isPopupVisible;
 
   if (isLoading) {
     return (

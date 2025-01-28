@@ -9,22 +9,18 @@ import {
   faPlus,
   faEye,
   faTrash,
-  faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import { AuthContext } from "../../components/context/AuthContext";
-import { ThreeDots } from "react-loader-spinner";
 import { toast } from "react-hot-toast";
 
 const Produk = () => {
   const navigate = useNavigate();
   const { token } = useContext(AuthContext);
   const [products, setProducts] = useState([]);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("Aktif");
   const [searchTerm, setSearchTerm] = useState("");
-  const [openDropdownId, setOpenDropdownId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
   const [categories, setCategories] = useState([]);
@@ -112,8 +108,6 @@ const Produk = () => {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
-
   const handleToggleProductStatus = async (productId, isActive) => {
     const toastId = toast.loading(
       `${isActive ? "Menonaktifkan" : "Mengaktifkan"} produk...`
@@ -158,22 +152,6 @@ const Produk = () => {
     }
   };
 
-  const sortProducts = (order) => {
-    const sortedProducts = [...products].sort((a, b) => {
-      if (order === "Termurah") {
-        return a.price - b.price;
-      } else if (order === "Termahal") {
-        return b.price - a.price;
-      } else if (order === "Terlama") {
-        return new Date(a.createdAt) - new Date(b.createdAt);
-      } else if (order === "Terbaru") {
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      }
-      return 0;
-    });
-    setProducts(sortedProducts);
-  };
-
   const handleDeleteProduct = async (productId, productName) => {
     const toastId = toast.loading("Menghapus produk..."); // Toast awal (loading)
 
@@ -207,7 +185,6 @@ const Produk = () => {
     setProductImages(product.productImages || []);
     setEditModalTab("details");
     setIsModalOpen(true);
-    setOpenDropdownId(null);
   };
 
   const closeEditModal = () => {

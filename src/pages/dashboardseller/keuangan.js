@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowDownTrayIcon, ChartBarIcon, CurrencyDollarIcon, ChevronDownIcon, MagnifyingGlassIcon, BanknotesIcon, ArrowTrendingUpIcon, CalendarDaysIcon } from '@heroicons/react/24/solid';
+import { ArrowDownTrayIcon, ChartBarIcon, CurrencyDollarIcon, MagnifyingGlassIcon, BanknotesIcon, ArrowTrendingUpIcon, CalendarDaysIcon } from '@heroicons/react/24/solid';
 import Modal from 'react-modal';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, LineElement, BarElement, PointElement, LinearScale, Title, Tooltip, Legend, CategoryScale } from 'chart.js';

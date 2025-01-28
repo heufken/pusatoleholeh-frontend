@@ -7,7 +7,6 @@ import Header from "../components/section/header";
 import Footer from "../components/section/footer";
 import { ThreeDots } from "react-loader-spinner";
 import { StarIcon, HeartIcon, ShoppingCartIcon, MapPinIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
-import { StarIcon as StarIconSolid } from "@heroicons/react/24/solid";
 
 const Shop = () => {
   const { shopName } = useParams();
@@ -39,6 +38,30 @@ const Shop = () => {
     [cdnUrl]
   );
 
+  const fetchProductsByShopId = useCallback(async (shopId) => {
+    try {
+      const productResponse = await axios.get(
+        `${apiUrl}/product/shop/${shopId}`
+      );
+      if (productResponse.status === 200) {
+        const productsData = productResponse.data || [];
+        const formattedProducts = productsData.map((product) => ({
+          ...product,
+          productCover: normalizeUrl(product.productCover),
+          averageRating: product.reviews?.length > 0 
+            ? product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length 
+            : 0,
+          totalReviews: product.reviews?.length || 0
+        }));
+
+        setProducts(formattedProducts);
+        setFilteredProducts(formattedProducts);
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  }, [apiUrl, normalizeUrl]);
+
   useEffect(() => {
     const fetchShopData = async () => {
       try {
@@ -66,7 +89,7 @@ const Shop = () => {
     };
 
     fetchShopData();
-  }, [normalizeUrl, apiUrl, shopName]);
+  }, [normalizeUrl, apiUrl, shopName, fetchProductsByShopId]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -82,30 +105,6 @@ const Shop = () => {
 
     fetchCategories();
   }, [apiUrl]);
-
-  const fetchProductsByShopId = async (shopId) => {
-    try {
-      const productResponse = await axios.get(
-        `${apiUrl}/product/shop/${shopId}`
-      );
-      if (productResponse.status === 200) {
-        const productsData = productResponse.data || [];
-        const formattedProducts = productsData.map((product) => ({
-          ...product,
-          productCover: normalizeUrl(product.productCover),
-          averageRating: product.reviews?.length > 0 
-            ? product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length 
-            : 0,
-          totalReviews: product.reviews?.length || 0
-        }));
-
-        setProducts(formattedProducts);
-        setFilteredProducts(formattedProducts);
-      }
-    } catch (error) {
-      console.error('Error fetching products:', error);
-    }
-  };
 
   const handleProductClick = (productId) => {
     navigate(`/product/${productId}`);
@@ -302,6 +301,7 @@ const Shop = () => {
           {filteredProducts.map((product) => (
             <div
               key={product._id}
+              onClick={() => handleProductClick(product._id)}
               className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1 cursor-pointer"
             >
               <div className="relative">
@@ -310,11 +310,6 @@ const Shop = () => {
                     src={product.productCover || '/placeholder-product.jpg'}
                     alt={product.name}
                     className="w-full h-64 object-cover object-center rounded-t-2xl"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = '/placeholder-product.jpg';
-                    }}
-                    onClick={() => handleProductClick(product._id)}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
@@ -322,14 +317,17 @@ const Shop = () => {
                 {/* Quick Action Buttons */}
                 <div className="absolute inset-0 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10">
                   <button 
-                    onClick={(e) => handleAddToWishlist(e, product._id)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card click event
+                      handleAddToWishlist(e, product._id);
+                    }}
                     className="p-2 bg-white rounded-full hover:bg-gray-100 transform hover:scale-110 transition-all duration-300 shadow-lg"
                   >
                     <HeartIcon className="h-5 w-5 text-gray-600" />
                   </button>
                   <button 
                     onClick={(e) => {
-                      e.stopPropagation();
+                      e.stopPropagation(); // Prevent card click event
                       handleProductClick(product._id);
                     }}
                     className="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transform hover:scale-105 transition-all duration-300 shadow-lg flex items-center gap-2"
@@ -359,7 +357,10 @@ const Shop = () => {
                 </div>
               </div>
 
-              <div className="p-4">
+              <div 
+                className="p-4"
+                onClick={(e) => e.stopPropagation()} // Prevent card click when interacting with text selection
+              >
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm text-gray-500">{product.category}</p>
                 </div>

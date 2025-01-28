@@ -158,15 +158,22 @@ const DataToko = () => {
 
     setIsUploading(true);
     setUploadError(null);
+    const toastId = toast.loading(`Mengupload ${uploadType === 'logo' ? 'logo' : 'banner'} toko...`);
 
     try {
       const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('type', uploadType);
+      if (uploadType === 'logo') {
+        formData.append('image', selectedFile);
+      } else {
+        formData.append('banner', selectedFile);
+      }
 
-      const response = await axios.post('/api/upload-shop-image', formData, {
+      const endpoint = uploadType === 'logo' ? '/shop/logo' : '/shop/banner';
+      
+      const response = await axios.post(`${apiUrl}${endpoint}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
         },
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -174,20 +181,33 @@ const DataToko = () => {
         },
       });
 
-      if (response.data.success) {
-        if (uploadType === 'logo') {
-          setShopData(prev => ({ ...prev, shopImage: response.data.url }));
-        } else {
-          setShopData(prev => ({ ...prev, shopBanner: response.data.url }));
+      if (response.data) {
+        // Fetch updated shop data
+        const shopResponse = await axios.get(`${apiUrl}/shop`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (shopResponse.data) {
+          setShopData(shopResponse.data);
+          toast.success(`${uploadType === 'logo' ? 'Logo' : 'Banner'} berhasil diupload`, {
+            id: toastId,
+          });
         }
+        
         setIsPreviewModalOpen(false);
         setPreviewImage(null);
         setSelectedFile(null);
-        toast.success(`${uploadType === 'logo' ? 'Logo' : 'Banner'} berhasil diupload`);
+        window.location.reload();
       }
     } catch (error) {
-      setUploadError(error.response?.data?.message || 'Gagal mengupload gambar');
-      toast.error('Gagal mengupload gambar');
+      console.error('Upload error:', error);
+      const errorMessage = error.response?.data?.message || 'Gagal mengupload gambar';
+      setUploadError(errorMessage);
+      toast.error(errorMessage, {
+        id: toastId,
+      });
     } finally {
       setIsUploading(false);
     }

@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { UserContext } from "../../pages/dashboardseller/dashboardseller";
 import { useNavigate } from "react-router-dom";
@@ -23,21 +23,8 @@ function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const cartCount = useCartCount();
-  const [isHovering, setIsHovering] = useState(false);
 
   const userData = userContext ? userContext.userData : null;
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      const userSection = document.querySelector('.user-section');
-      if (userSection && !userSection.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const handleProtectedNavigation = (path) => {
     if (!isAuthenticated) {
@@ -137,22 +124,12 @@ function Header() {
           <div className="border-l border-gray-600 h-8 mx-2"></div>
           
           {/* User Section with Dropdown */}
-          <div className="user-section relative">
+          <div className="user-section flex items-center relative">
             {isAuthenticated ? (
               <div
                 className="relative"
-                onMouseEnter={() => {
-                  setIsHovering(true);
-                  setIsDropdownOpen(true);
-                }}
-                onMouseLeave={() => {
-                  setIsHovering(false);
-                  setTimeout(() => {
-                    if (!isHovering) {
-                      setIsDropdownOpen(false);
-                    }
-                  }, 100);
-                }}
+                onMouseEnter={() => setIsDropdownOpen(true)}
+                onMouseLeave={() => setIsDropdownOpen(false)}
               >
                 <button className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-all">
                   <div className="w-8 h-8 bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] rounded-full flex items-center justify-center">
@@ -164,43 +141,14 @@ function Header() {
                     {user?.name || userData?.name}
                   </span>
                 </button>
-                
                 {isDropdownOpen && (
-                  <div 
-                    onMouseEnter={() => setIsHovering(true)}
-                    onMouseLeave={() => {
-                      setIsHovering(false);
-                      setTimeout(() => {
-                        if (!isHovering) {
-                          setIsDropdownOpen(false);
-                        }
-                      }, 100);
-                    }}
-                  >
-                    <DropdownMenu
-                      role={user?.role}
-                      onProfileClick={() => {
-                        handleProfileRedirect();
-                        setIsDropdownOpen(false);
-                        setIsHovering(false);
-                      }}
-                      onWishlistClick={() => {
-                        handleProtectedNavigation('/wishlist');
-                        setIsDropdownOpen(false);
-                        setIsHovering(false);
-                      }}
-                      onCartClick={() => {
-                        handleProtectedNavigation('/cart');
-                        setIsDropdownOpen(false);
-                        setIsHovering(false);
-                      }}
-                      onLogoutClick={() => {
-                        handleLogout();
-                        setIsDropdownOpen(false);
-                        setIsHovering(false);
-                      }}
-                    />
-                  </div>
+                  <DropdownMenu
+                    role={user?.role}
+                    onProfileClick={handleProfileRedirect}
+                    onWishlistClick={() => handleProtectedNavigation('/wishlist')}
+                    onCartClick={() => handleProtectedNavigation('/cart')}
+                    onLogoutClick={handleLogout}
+                  />
                 )}
               </div>
             ) : (

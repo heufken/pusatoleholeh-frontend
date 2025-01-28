@@ -1,9 +1,8 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { ExclamationTriangleIcon, ChartBarIcon, EyeIcon, ShoppingCartIcon, CurrencyDollarIcon, UsersIcon, ClockIcon } from '@heroicons/react/24/solid';
+import React, { useEffect, useState, useContext, useCallback } from 'react';
+import { ExclamationTriangleIcon, EyeIcon, ShoppingCartIcon, CurrencyDollarIcon, UsersIcon, ClockIcon } from '@heroicons/react/24/solid';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { AuthContext } from '../../components/context/AuthContext';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { Link } from 'react-router-dom';
 
 const StatCard = ({ label, value, icon: Icon, loading, onClick }) => (
@@ -41,11 +40,12 @@ const Home = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [hasTransactions, setHasTransactions] = useState(false);
   
   const { token } = useContext(AuthContext);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -54,58 +54,79 @@ const Home = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // Transform the response data to match the component's needs
-      const transformedTransactions = response.data.transactions.map(item => ({
-        ...item.transaction,
-        status: item.status.status,
-        totalPrice: item.transaction.totalPrice
-      }));
+      // Check if there are any transactions
+      if (response.data.transactions && response.data.transactions.length > 0) {
+        setHasTransactions(true);
+        // Transform the response data to match the component's needs
+        const transformedTransactions = response.data.transactions.map(item => ({
+          ...item.transaction,
+          status: item.status.status,
+          totalPrice: item.transaction.totalPrice
+        }));
 
-      // Calculate transaction stats
-      const transactionStats = transformedTransactions.reduce((acc, transaction) => {
-        switch (transaction.status) {
-          case 'Paid':
-            acc.newOrders++;
-            acc.revenue += transaction.totalPrice;
-            break;
-          case 'Processed':
-            acc.readyToShip++;
-            acc.revenue += transaction.totalPrice;
-            break;
-          case 'Completed':
-            acc.totalSales++;
-            acc.revenue += transaction.totalPrice;
-            break;
-          default:
-            break;
-        }
-        return acc;
-      }, { 
-        newOrders: 0, 
-        readyToShip: 0, 
-        totalSales: 0, 
-        revenue: 0,
-        newChats: 0,
-        visitors: 0 
-      });
+        // Calculate transaction stats
+        const transactionStats = transformedTransactions.reduce((acc, transaction) => {
+          switch (transaction.status) {
+            case 'Paid':
+              acc.newOrders++;
+              acc.revenue += transaction.totalPrice;
+              break;
+            case 'Processed':
+              acc.readyToShip++;
+              acc.revenue += transaction.totalPrice;
+              break;
+            case 'Completed':
+              acc.totalSales++;
+              acc.revenue += transaction.totalPrice;
+              break;
+            default:
+              break;
+          }
+          return acc;
+        }, { 
+          newOrders: 0, 
+          readyToShip: 0, 
+          totalSales: 0, 
+          revenue: 0,
+          newChats: 0,
+          visitors: 0 
+        });
 
-      setStats({
-        transactions: transactionStats
-      });
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-      setError(error.response?.data?.message || 'Terjadi kesalahan saat mengambil data');
-      toast.error('Gagal memuat data dashboard');
+        setStats({
+          transactions: transactionStats
+        });
+      } else {
+        setHasTransactions(false);
+        // Set default empty stats
+        setStats({
+          transactions: {
+            newOrders: 0,
+            readyToShip: 0,
+            totalSales: 0,
+            newChats: 0,
+            revenue: 0,
+            visitors: 0
+          }
+        });
+      }
+    } catch (err) {
+      if (err.response?.status !== 404) {
+        console.error('Error fetching stats:', err);
+        setError(err.response?.data?.message || 'Terjadi kesalahan saat mengambil data');
+        toast.error('Gagal memuat data dashboard');
+      } else {
+        setHasTransactions(false);
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [apiUrl, token]);
 
   useEffect(() => {
     fetchStats();
     const interval = setInterval(fetchStats, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [token, apiUrl]);
+  }, [fetchStats]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('id-ID', {
@@ -145,34 +166,38 @@ const Home = () => {
         <h1 className="text-3xl font-bold bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-transparent bg-clip-text mb-2">
           Selamat Datang Kembali!
         </h1>
-        <p className="text-gray-600">Berikut ringkasan aktivitas toko Anda hari ini</p>
+        <p className="text-gray-600">
+          {hasTransactions 
+            ? "Berikut ringkasan aktivitas toko Anda hari ini"
+            : "Belum ada aktivitas transaksi di toko Anda"}
+        </p>
       </div>
       
       {/* Transaction Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
         <StatCard
           label="Pesanan Baru"
-          value={stats.transactions.newOrders}
+          value={hasTransactions ? stats.transactions.newOrders : "-"}
           icon={ShoppingCartIcon}
           loading={loading}
           onClick={() => window.location.href = '/dashboard-seller/pesanan'}
         />
         <StatCard
           label="Siap Kirim"
-          value={stats.transactions.readyToShip}
+          value={hasTransactions ? stats.transactions.readyToShip : "-"}
           icon={ShoppingCartIcon}
           loading={loading}
           onClick={() => window.location.href = '/dashboard-seller/pesanan'}
         />
         <StatCard
           label="Pendapatan"
-          value={formatCurrency(stats.transactions.revenue || 0)}
+          value={hasTransactions ? formatCurrency(stats.transactions.revenue || 0) : "-"}
           icon={CurrencyDollarIcon}
           loading={loading}
         />
         <StatCard
           label="Pengunjung"
-          value={stats.transactions.visitors || 0}
+          value={hasTransactions ? stats.transactions.visitors || 0 : "-"}
           icon={UsersIcon}
           loading={loading}
         />
@@ -203,7 +228,9 @@ const Home = () => {
                 </div>
               ) : (
                 <>
-                  <p className="text-3xl font-bold text-[#4F46E5] mb-2">{stats.transactions.totalSales}</p>
+                  <p className="text-3xl font-bold text-[#4F46E5] mb-2">
+                    {hasTransactions ? stats.transactions.totalSales : "-"}
+                  </p>
                   <p className="text-gray-600">Total Transaksi Selesai</p>
                 </>
               )}
@@ -217,7 +244,9 @@ const Home = () => {
                 </div>
               ) : (
                 <>
-                  <p className="text-3xl font-bold text-[#4F46E5] mb-2">{stats.transactions.newOrders}</p>
+                  <p className="text-3xl font-bold text-[#4F46E5] mb-2">
+                    {hasTransactions ? stats.transactions.newOrders : "-"}
+                  </p>
                   <p className="text-gray-600">Menunggu Diproses</p>
                 </>
               )}
@@ -231,7 +260,9 @@ const Home = () => {
                 </div>
               ) : (
                 <>
-                  <p className="text-3xl font-bold text-[#4F46E5] mb-2">{formatCurrency(stats.transactions.revenue || 0)}</p>
+                  <p className="text-3xl font-bold text-[#4F46E5] mb-2">
+                    {hasTransactions ? formatCurrency(stats.transactions.revenue || 0) : "-"}
+                  </p>
                   <p className="text-gray-600">Total Pendapatan</p>
                 </>
               )}

@@ -96,13 +96,6 @@ function Nav() {
     }, 200);
   };
 
-  const handleDropdownOpen = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    setIsDropdownOpen(true);
-  };
-
   const handleDropdownClose = () => {
     timeoutRef.current = setTimeout(() => {
       setIsDropdownOpen(false);

@@ -13,7 +13,7 @@ const LandingPage = () => {
   const [userData, setUserData] = useState(null);
   const [addressData, setAddressData] = useState(null);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
-  const { token } = useContext(AuthContext);
+  const { token, isAuthenticated } = useContext(AuthContext);
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
   useEffect(() => {
@@ -48,7 +48,7 @@ const LandingPage = () => {
   };
 
   const isProfileIncomplete = !addressData || !userData?.profileImage;
-  const shouldShowPopup = initialLoadComplete && isProfileIncomplete && token && showPopup;
+  const shouldShowPopup = initialLoadComplete && isProfileIncomplete && isAuthenticated && token && showPopup;
 
   return (
     <>

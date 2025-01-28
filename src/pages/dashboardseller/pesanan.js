@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { MagnifyingGlassIcon, ChevronDownIcon, EyeIcon, PrinterIcon } from '@heroicons/react/24/solid';
+import { ShoppingBagIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
 import { AuthContext } from '../../components/context/AuthContext';
 import { toast } from 'react-hot-toast';
@@ -22,38 +23,56 @@ const Pesanan = () => {
 
   const fetchTransactions = useCallback(async () => {
     try {
+      setLoading(true);
       const response = await axios.get(`${apiUrl}/transaction/seller`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      // Transform the response data to match the component's needs
-      const transformedTransactions = response.data.transactions.map(item => ({
-        ...item.transaction,
-        status: item.status.status,
-        transactionId: item.transaction._id,
-        buyer: item.transaction.userId,
-        totalPrice: item.transaction.totalPrice,
-        createdAt: item.transaction.createdAt
-      }));
+      // Check if transactions exist
+      if (response.data.transactions && response.data.transactions.length > 0) {
+        // Transform the response data to match the component's needs
+        const transformedTransactions = response.data.transactions.map(item => ({
+          ...item.transaction,
+          status: item.status.status,
+          transactionId: item.transaction._id,
+          buyer: item.transaction.userId,
+          totalPrice: item.transaction.totalPrice,
+          createdAt: item.transaction.createdAt
+        }));
 
-      setTransactions(transformedTransactions);
-      
-      // Count transactions by status
-      const counts = transformedTransactions.reduce((acc, transaction) => {
-        acc[transaction.status] = (acc[transaction.status] || 0) + 1;
-        return acc;
-      }, {
-        'Not Paid': 0,
-        'Paid': 0,
-        'Processed': 0,
-        'Completed': 0,
-        'Cancelled': 0
-      });
-      
-      setStatusCounts(counts);
-      setLoading(false);
+        setTransactions(transformedTransactions);
+        
+        // Count transactions by status
+        const counts = transformedTransactions.reduce((acc, transaction) => {
+          acc[transaction.status] = (acc[transaction.status] || 0) + 1;
+          return acc;
+        }, {
+          'Not Paid': 0,
+          'Paid': 0,
+          'Processed': 0,
+          'Completed': 0,
+          'Cancelled': 0
+        });
+        
+        setStatusCounts(counts);
+      } else {
+        // If no transactions, set empty arrays/objects instead of error
+        setTransactions([]);
+        setStatusCounts({
+          'Not Paid': 0,
+          'Paid': 0,
+          'Processed': 0,
+          'Completed': 0,
+          'Cancelled': 0
+        });
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Error fetching transactions');
+      // Only set error for non-404 errors
+      if (err.response?.status !== 404) {
+        setError(err.response?.data?.message || 'Error fetching transactions');
+        toast.error('Gagal memuat data transaksi');
+      }
+    } finally {
       setLoading(false);
     }
   }, [apiUrl, token]);
@@ -80,14 +99,30 @@ const Pesanan = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-  // Dummy data untuk informasi tambahan
-  const getDummyInfo = (transactionId) => ({
-    buyerName: `Pembeli ${transactionId.slice(-4)}`,
-    productName: `Produk ${transactionId.slice(-4)}`,
-  });
-
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
+
+  // Show empty state if no transactions
+  if (transactions.length === 0) {
+    return (
+      <div className="p-0">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-transparent bg-clip-text mb-2">
+          Halaman Pesanan
+        </h1>
+        <p className="text-gray-600 mb-8">Berikut informasi pesanan anda</p>
+
+        <div className="flex flex-col items-center justify-center py-12 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg">
+          <ShoppingBagIcon className="w-24 h-24 text-gray-300 mb-4" />
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">
+            Belum Ada Pesanan
+          </h2>
+          <p className="text-gray-500 text-center max-w-md">
+            Saat ini belum ada pesanan yang masuk. Pesanan akan muncul di sini ketika pembeli melakukan pembelian di toko Anda.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-0 ">
