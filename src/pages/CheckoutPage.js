@@ -943,7 +943,7 @@ const CheckoutPage = () => {
                     ? 'Pilih metode pembayaran'
                     : Object.keys(selectedCouriers).length !== checkoutData?.shops.length
                       ? 'Pilih kurir untuk semua toko'
-                      : 'Bayar Sekarang'}
+                      : 'Pesan Sekarang'}
                 </button>
               </div>
             </div>

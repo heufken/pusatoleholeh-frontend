@@ -129,10 +129,6 @@ const WishlistPage = () => {
                                 src={product.coverUrl} 
                                 alt={product.name}
                                 className="w-full h-64 object-cover object-center transform scale-105 transition-transform duration-[2000ms] group-hover:scale-100"
-                                onError={(e) => {
-                                  e.target.onerror = null;
-                                  e.target.src = '/placeholder-product.jpg';
-                                }}
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-gray-900/95 via-gray-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                             </div>

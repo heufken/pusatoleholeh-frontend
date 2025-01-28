@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { MagnifyingGlassIcon, ChevronDownIcon, EyeIcon, PrinterIcon } from '@heroicons/react/24/solid';
 import axios from 'axios';
 import { AuthContext } from '../../components/context/AuthContext';
+import { toast } from 'react-hot-toast';
 
 const Pesanan = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -24,15 +25,32 @@ const Pesanan = () => {
       const response = await axios.get(`${apiUrl}/transaction/seller`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setTransactions(response.data.transactionStatuses);
+      
+      // Transform the response data to match the component's needs
+      const transformedTransactions = response.data.transactions.map(item => ({
+        ...item.transaction,
+        status: item.status.status,
+        transactionId: item.transaction._id,
+        buyer: item.transaction.userId,
+        totalPrice: item.transaction.totalPrice,
+        createdAt: item.transaction.createdAt
+      }));
+
+      setTransactions(transformedTransactions);
       
       // Count transactions by status
-      const counts = response.data.transactionStatuses.reduce((acc, transaction) => {
+      const counts = transformedTransactions.reduce((acc, transaction) => {
         acc[transaction.status] = (acc[transaction.status] || 0) + 1;
         return acc;
-      }, {});
-      setStatusCounts(counts);
+      }, {
+        'Not Paid': 0,
+        'Paid': 0,
+        'Processed': 0,
+        'Completed': 0,
+        'Cancelled': 0
+      });
       
+      setStatusCounts(counts);
       setLoading(false);
     } catch (err) {
       setError(err.response?.data?.message || 'Error fetching transactions');
@@ -52,8 +70,9 @@ const Pesanan = () => {
         { headers: { Authorization: `Bearer ${token}` }}
       );
       fetchTransactions(); // Refresh data after processing
+      toast.success('Pesanan berhasil diproses');
     } catch (err) {
-      setError(err.response?.data?.message || 'Error processing transaction');
+      toast.error(err.response?.data?.message || 'Error processing transaction');
     }
   };
 
@@ -139,47 +158,50 @@ const Pesanan = () => {
             </tr>
           </thead>
           <tbody>
-            {transactions.map((transaction) => {
-              const dummyInfo = getDummyInfo(transaction.transactionId);
-              return (
-                <tr key={transaction._id} className="border-b border-gray-200 hover:bg-gray-50">
-                  <td className="p-4">{transaction.transactionId}</td>
-                  <td className="p-4">{dummyInfo.buyerName}</td>
-                  <td className="p-4">{dummyInfo.productName}</td>
-                  <td className="p-4 text-center">Rp {transaction.totalPrice?.toLocaleString('id-ID')}</td>
-                  <td className="p-4 text-center">
-                    {new Date(transaction.createdAt).toLocaleDateString('id-ID')}
-                  </td>
-                  <td className="p-4 text-center">
-                    <span className={`px-3 py-1 rounded-full text-sm ${
-                      transaction.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                      transaction.status === 'Paid' ? 'bg-blue-100 text-blue-800' :
-                      transaction.status === 'Processed' ? 'bg-yellow-100 text-yellow-800' :
-                      transaction.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {transaction.status}
-                    </span>
-                  </td>
-                  <td className="p-4 text-center">
-                    {transaction.status === 'Paid' && (
-                      <button
-                        onClick={() => handleProcessTransaction(transaction.transactionId)}
-                        className="bg-blue-500 text-white px-3 py-1 rounded mr-2 text-sm"
-                      >
-                        Process
-                      </button>
-                    )}
-                    <button className="mr-2" title="Lihat Detail">
-                      <EyeIcon className="w-5 h-5 text-gray-500" />
+            {transactions.map((transaction) => (
+              <tr key={transaction._id} className="border-b border-gray-200 hover:bg-gray-50">
+                <td className="p-4">{transaction._id}</td>
+                <td className="p-4">{transaction.buyer.name}</td>
+                <td className="p-4">
+                  {transaction.products.map((product, index) => (
+                    <div key={index}>{product.productId}</div>
+                  ))}
+                </td>
+                <td className="p-4 text-center">
+                  Rp {transaction.totalPrice?.toLocaleString('id-ID')}
+                </td>
+                <td className="p-4 text-center">
+                  {new Date(transaction.createdAt).toLocaleDateString('id-ID')}
+                </td>
+                <td className="p-4 text-center">
+                  <span className={`px-3 py-1 rounded-full text-sm ${
+                    transaction.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                    transaction.status === 'Paid' ? 'bg-blue-100 text-blue-800' :
+                    transaction.status === 'Processed' ? 'bg-yellow-100 text-yellow-800' :
+                    transaction.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {transaction.status}
+                  </span>
+                </td>
+                <td className="p-4 text-center">
+                  {transaction.status === 'Paid' && (
+                    <button
+                      onClick={() => handleProcessTransaction(transaction._id)}
+                      className="bg-blue-500 text-white px-3 py-1 rounded mr-2 text-sm"
+                    >
+                      Process
                     </button>
-                    <button title="Cetak Invoice">
-                      <PrinterIcon className="w-5 h-5 text-gray-500" />
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
+                  )}
+                  <button className="mr-2" title="Lihat Detail">
+                    <EyeIcon className="w-5 h-5 text-gray-500" />
+                  </button>
+                  <button title="Cetak Invoice">
+                    <PrinterIcon className="w-5 h-5 text-gray-500" />
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

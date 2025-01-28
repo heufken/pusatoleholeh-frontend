@@ -40,12 +40,25 @@ const Produk = () => {
   const normalizeUrl = useCallback(
     (url) => {
       if (!url) return null;
-      const cleanedPath = url
-        .replace(/^.*localhost:\d+\//, "/") // Menghapus host lokal yang salah
-        .replace(/\\/g, "/"); // Mengubah backslash menjadi slash
-      return `${cdnUrl}/${cleanedPath}`
-        .replace(/\/\//g, "/") // Hindari double slash
-        .replace(":/", "://"); // Perbaiki protokol
+      
+      try {
+        // Buat URL object untuk parsing
+        const urlObj = new URL(url.replace(/\\/g, "/"));
+        
+        // Ambil pathname dari URL (bagian setelah host)
+        const pathname = urlObj.pathname;
+        
+        // Gabungkan dengan CDN URL
+        return new URL(pathname, cdnUrl).toString();
+      } catch (e) {
+        // Jika URL invalid, coba cara alternatif
+        const cleanPath = url
+          .replace(/^(?:https?:)?(?:\/\/)?[^/]+/, '') // Hapus protocol dan host (perbaikan escape character)
+          .replace(/\\/g, "/")                         // Normalize slashes
+          .replace(/^\/+/, '/');                       // Pastikan hanya ada satu leading slash
+
+        return `${cdnUrl}${cleanPath}`;
+      }
     },
     [cdnUrl]
   );
@@ -62,8 +75,7 @@ const Produk = () => {
       // Menambahkan normalisasi URL untuk cover gambar
       const productsData = response.data.map((product) => ({
         ...product,
-        image:
-          normalizeUrl(product.productCover) || "https://placehold.co/600x400", // Menambahkan normalisasi URL
+        image: normalizeUrl(product.productCover)
       }));
 
       setProducts(productsData);
@@ -94,7 +106,7 @@ const Produk = () => {
   const handleAddProduct = () => navigate("/add-product");
 
   const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = product.name?.toLowerCase().includes(searchTerm?.toLowerCase() || '') || false;
     const matchesCategory = !selectedCategory || product.categoryId?._id === selectedCategory;
     const matchesStatus = activeTab === "Aktif" ? product.isActive : !product.isActive;
     return matchesSearch && matchesCategory && matchesStatus;

@@ -12,12 +12,12 @@ import Search from "./pages/search";
 import ProductDetail from "./pages/productdetail";
 import Shop from "./pages/shop";
 import ArticlePage from "./pages/articlehomepage";
-import Article from "./pages/article";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage.js";
 import Transaction from "./pages/transaction";
 import WishlistPage from "./pages/wishlist";
 import ProtectedRoute from "./components/protectedroute";
+import ArticleDetail from './pages/articledetail';
 
 function App() {
   return (
@@ -33,7 +33,7 @@ function App() {
           <Route path="/shop/:shopName" element={<Shop />} />
           <Route path="/product/:productId" element={<ProductDetail />} />
           <Route path="/articlehomepage" element={<ArticlePage />} />
-          <Route path="/article" element={<Article />} />
+          <Route path="/articleview/:articleId" element={<ArticleDetail />} />
 
           {/* Protected Seller Routes */}
           <Route element={<ProtectedRoute allowedRoles={["seller"]} />}>

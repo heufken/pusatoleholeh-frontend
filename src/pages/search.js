@@ -150,6 +150,7 @@ const Search = () => {
                     <div
                       key={result._id}
                       className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-1 cursor-pointer"
+                      onClick={(e) => handleProductClick(e, result._id)}
                     >
                       <div className="relative">
                         <div className="aspect-w-1 aspect-h-1 overflow-hidden rounded-t-2xl">
@@ -157,11 +158,7 @@ const Search = () => {
                             src={normalizeUrl(result.productCover) || '/placeholder-product.jpg'}
                             alt={result.name}
                             className="w-full h-64 object-cover object-center rounded-t-2xl"
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.src = '/placeholder-product.jpg';
-                            }}
-                            onClick={(e) => handleProductClick(e, result._id)}
+                            
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         </div>
