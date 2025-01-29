@@ -152,25 +152,52 @@ const DataToko = () => {
     }
   };
 
-  // Handle image upload
-  const handleSaveImage = async () => {
+  // Handle logo upload
+  const handleSaveLogo = async () => {
     if (!selectedFile) return;
 
     setIsUploading(true);
     setUploadError(null);
-    const toastId = toast.loading(`Mengupload ${uploadType === 'logo' ? 'logo' : 'banner'} toko...`);
+    const toastId = toast.loading('Mengupload logo toko...');
 
     try {
-      const formData = new FormData();
-      if (uploadType === 'logo') {
-        formData.append('image', selectedFile);
-      } else {
-        formData.append('banner', selectedFile);
+      // Check if logo exists and delete it first
+      if (shopDataState?.shopLogo) {
+        try {
+          console.log('Deleting existing logo...');
+          
+          // First delete request
+          const deleteResponse = await axios.delete(`${apiUrl}/shop/logo`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          console.log('Delete response:', deleteResponse.data);
+
+          // Wait for 2 seconds
+          await new Promise(resolve => setTimeout(resolve, 2000));
+
+          // Verify deletion with GET request
+          const checkResponse = await axios.get(`${apiUrl}/shop`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          
+          if (checkResponse.data?.shop?.shopLogo) {
+            console.log('Logo still exists, throwing error...');
+            throw new Error('Logo lama belum berhasil dihapus');
+          }
+
+          console.log('Logo successfully deleted');
+        } catch (deleteError) {
+          console.error('Error deleting logo:', deleteError);
+          throw new Error('Gagal menghapus logo lama: ' + (deleteError.message || 'Unknown error'));
+        }
       }
 
-      const endpoint = uploadType === 'logo' ? '/shop/logo' : '/shop/banner';
-      
-      const response = await axios.post(`${apiUrl}${endpoint}`, formData, {
+      console.log('Preparing to upload new logo...');
+      const formData = new FormData();
+      formData.append('image', selectedFile);
+
+      // Attempt to upload new logo
+      const uploadResponse = await axios.post(`${apiUrl}/shop/logo`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`
@@ -181,20 +208,20 @@ const DataToko = () => {
         },
       });
 
-      if (response.data) {
-        // Fetch updated shop data
-        const shopResponse = await axios.get(`${apiUrl}/shop`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+      console.log('Upload response:', uploadResponse.data);
 
-        if (shopResponse.data) {
-          setShopData(shopResponse.data);
-          toast.success(`${uploadType === 'logo' ? 'Logo' : 'Banner'} berhasil diupload`, {
-            id: toastId,
-          });
-        }
+      // Final check and update UI
+      const shopResponse = await axios.get(`${apiUrl}/shop`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (shopResponse.data) {
+        setShopData(shopResponse.data);
+        toast.success(`Logo berhasil ${shopDataState?.shopLogo ? 'diperbarui' : 'ditambahkan'}`, {
+          id: toastId,
+        });
         
         setIsPreviewModalOpen(false);
         setPreviewImage(null);
@@ -202,14 +229,78 @@ const DataToko = () => {
         window.location.reload();
       }
     } catch (error) {
-      console.error('Upload error:', error);
-      const errorMessage = error.response?.data?.message || 'Gagal mengupload gambar';
+      console.error('Final error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Gagal mengupload logo';
       setUploadError(errorMessage);
       toast.error(errorMessage, {
         id: toastId,
       });
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  // Handle banner upload
+  const handleSaveBanner = async () => {
+    if (!selectedFile) return;
+
+    setIsUploading(true);
+    setUploadError(null);
+    const toastId = toast.loading('Mengupload banner toko...');
+
+    try {
+      const formData = new FormData();
+      formData.append('banner', selectedFile);
+      
+      // Use PUT if banner exists, POST if it doesn't
+      const method = shopDataState?.shopBanner ? 'put' : 'post';
+      
+      await axios[method](`${apiUrl}/shop/banner`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          console.log('Upload Progress:', percentCompleted);
+        },
+      });
+
+      const shopResponse = await axios.get(`${apiUrl}/shop`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (shopResponse.data) {
+        setShopData(shopResponse.data);
+        toast.success(`Banner berhasil ${shopDataState?.shopBanner ? 'diperbarui' : 'ditambahkan'}`, {
+          id: toastId,
+        });
+      }
+      
+      setIsPreviewModalOpen(false);
+      setPreviewImage(null);
+      setSelectedFile(null);
+      window.location.reload();
+    } catch (error) {
+      console.error('Upload error:', error);
+      const errorMessage = error.response?.data?.message || 'Gagal mengupload banner';
+      setUploadError(errorMessage);
+      toast.error(errorMessage, {
+        id: toastId,
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Update the preview modal save button to use the appropriate function
+  const handlePreviewSave = () => {
+    if (uploadType === 'logo') {
+      handleSaveLogo();
+    } else {
+      handleSaveBanner();
     }
   };
 
@@ -295,6 +386,15 @@ const DataToko = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Update the UI to show appropriate button text
+  const getUploadButtonText = () => {
+    if (isUploading) return 'Mengupload...';
+    if (uploadType === 'logo') {
+      return shopDataState?.shopLogo ? 'Perbarui Logo' : 'Upload Logo';
+    }
+    return shopDataState?.shopBanner ? 'Perbarui Banner' : 'Upload Banner';
   };
 
   return (
@@ -633,8 +733,8 @@ const DataToko = () => {
                         Batal
                       </button>
                       <button
-                        onClick={handleSaveImage}
-                        disabled={isUploading || !selectedFile}
+                        onClick={handlePreviewSave}
+                        disabled={isUploading}
                         className={`px-6 py-2.5 ${
                           isUploading || !selectedFile 
                             ? 'bg-gray-400 cursor-not-allowed' 
@@ -650,7 +750,7 @@ const DataToko = () => {
                             <span>Mengupload...</span>
                           </>
                         ) : (
-                          <span>Simpan</span>
+                          <span>{getUploadButtonText()}</span>
                         )}
                       </button>
                     </div>
