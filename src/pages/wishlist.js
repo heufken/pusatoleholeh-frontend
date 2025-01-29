@@ -183,7 +183,7 @@ const WishlistPage = () => {
               Jelajahi koleksi kami dan simpan produk favorit Anda
             </p>
             <Link 
-              to="/shop" 
+              to="/" 
               className="inline-block bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white px-6 py-3 rounded-lg hover:from-[#4338CA] hover:to-[#3730A3] transition-all duration-300 shadow-lg hover:shadow-indigo-500/30"
             >
               Mulai Belanja
